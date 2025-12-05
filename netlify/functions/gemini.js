@@ -1,11 +1,24 @@
 // Netlify Serverless Function to proxy Gemini API calls
 // This keeps your API key secure on the server side
 
+const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+};
+
 exports.handler = async (event) => {
+    // Handle CORS preflight request
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 204, headers, body: '' };
+    }
+
     // Only allow POST requests
     if (event.httpMethod !== 'POST') {
         return {
             statusCode: 405,
+            headers,
             body: JSON.stringify({ error: 'Method not allowed' })
         };
     }
@@ -14,8 +27,10 @@ exports.handler = async (event) => {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
     if (!GEMINI_API_KEY) {
+        console.error('GEMINI_API_KEY not found in environment variables');
         return {
             statusCode: 500,
+            headers,
             body: JSON.stringify({ error: 'API key not configured' })
         };
     }
@@ -26,6 +41,7 @@ exports.handler = async (event) => {
         if (!prompt) {
             return {
                 statusCode: 400,
+                headers,
                 body: JSON.stringify({ error: 'Prompt is required' })
             };
         }
@@ -47,7 +63,8 @@ exports.handler = async (event) => {
             console.error('Gemini API error:', errorData);
             return {
                 statusCode: response.status,
-                body: JSON.stringify({ error: 'Gemini API request failed' })
+                headers,
+                body: JSON.stringify({ error: 'Gemini API request failed', details: errorData })
             };
         }
 
@@ -56,10 +73,7 @@ exports.handler = async (event) => {
 
         return {
             statusCode: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
+            headers,
             body: JSON.stringify({ text: generatedText })
         };
 
@@ -67,7 +81,8 @@ exports.handler = async (event) => {
         console.error('Function error:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Internal server error' })
+            headers,
+            body: JSON.stringify({ error: 'Internal server error', message: error.message })
         };
     }
 };
