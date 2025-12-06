@@ -189,18 +189,14 @@
             overflow: hidden;
         }
 
-        /* Cursor-following glow */
-        .cursor-glow {
+        /* Floating glow orbs - gas-like effect */
+        .glow-orb {
             position: fixed;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(6, 67, 154, 0.25) 0%, rgba(74, 144, 217, 0.1) 30%, transparent 70%);
+            background: radial-gradient(circle, rgba(6, 67, 154, 0.3) 0%, rgba(74, 144, 217, 0.15) 40%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 0;
-            transform: translate(-50%, -50%);
-            transition: transform 0.1s ease-out, opacity 0.3s ease;
-            filter: blur(40px);
+            filter: blur(60px);
         }
 
         .hero::before {
@@ -573,32 +569,75 @@
         <p>© 2025 PARIS NoteAI. All rights reserved.</p>
     </footer>
 
-    <!-- Cursor Following Glow -->
-    <div class="cursor-glow" id="cursor-glow"></div>
+    <!-- Floating Glow Orbs -->
+    <div class="glow-orb" id="glow-orb-1"></div>
+    <div class="glow-orb" id="glow-orb-2"></div>
+    <div class="glow-orb" id="glow-orb-3"></div>
 
     <script>
-        // Cursor-following glow effect
-        const cursorGlow = document.getElementById('cursor-glow');
-        let mouseX = 0, mouseY = 0;
-        let glowX = 0, glowY = 0;
+        // Random floating gas-like effect
+        class FloatingOrb {
+            constructor(element, config) {
+                this.element = element;
+                this.x = config.startX || Math.random() * window.innerWidth;
+                this.y = config.startY || Math.random() * window.innerHeight * 0.6;
+                this.vx = (Math.random() - 0.5) * config.speed;
+                this.vy = (Math.random() - 0.5) * config.speed;
+                this.size = config.size || 400;
+                this.opacity = config.opacity || 0.15;
 
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-        });
+                this.element.style.width = this.size + 'px';
+                this.element.style.height = this.size + 'px';
+                this.element.style.opacity = this.opacity;
+            }
 
-        // Smooth animation loop for floating effect
-        function animateGlow() {
-            // Smooth interpolation for floating effect
-            glowX += (mouseX - glowX) * 0.08;
-            glowY += (mouseY - glowY) * 0.08;
+            update() {
+                // Random direction changes for organic movement
+                this.vx += (Math.random() - 0.5) * 0.02;
+                this.vy += (Math.random() - 0.5) * 0.02;
 
-            cursorGlow.style.left = glowX + 'px';
-            cursorGlow.style.top = glowY + 'px';
+                // Limit velocity
+                const maxSpeed = 0.8;
+                this.vx = Math.max(-maxSpeed, Math.min(maxSpeed, this.vx));
+                this.vy = Math.max(-maxSpeed, Math.min(maxSpeed, this.vy));
 
-            requestAnimationFrame(animateGlow);
+                // Update position
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Bounce off edges with soft margins
+                const margin = this.size / 2;
+                if (this.x < -margin) { this.x = -margin; this.vx *= -0.5; }
+                if (this.x > window.innerWidth - margin) { this.x = window.innerWidth - margin; this.vx *= -0.5; }
+                if (this.y < -margin) { this.y = -margin; this.vy *= -0.5; }
+                if (this.y > window.innerHeight * 0.8) { this.y = window.innerHeight * 0.8; this.vy *= -0.5; }
+
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+            }
         }
-        animateGlow();
+
+        // Create floating orbs with different configs
+        const orbs = [
+            new FloatingOrb(document.getElementById('glow-orb-1'), {
+                startX: window.innerWidth * 0.3, startY: window.innerHeight * 0.3,
+                speed: 0.5, size: 500, opacity: 0.2
+            }),
+            new FloatingOrb(document.getElementById('glow-orb-2'), {
+                startX: window.innerWidth * 0.7, startY: window.innerHeight * 0.4,
+                speed: 0.4, size: 400, opacity: 0.15
+            }),
+            new FloatingOrb(document.getElementById('glow-orb-3'), {
+                startX: window.innerWidth * 0.5, startY: window.innerHeight * 0.2,
+                speed: 0.6, size: 350, opacity: 0.12
+            })
+        ];
+
+        function animateOrbs() {
+            orbs.forEach(orb => orb.update());
+            requestAnimationFrame(animateOrbs);
+        }
+        animateOrbs();
 
         // Intersection Observer for scroll animations
         const observerOptions = {
