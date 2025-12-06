@@ -734,6 +734,21 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content modal-small delete-confirm-modal">
+            <div class="delete-icon">
+                <span class="material-icons-round">delete_forever</span>
+            </div>
+            <h2>Delete Note?</h2>
+            <p>Are you sure you want to delete this note? This action cannot be undone.</p>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="modal-btn danger" id="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";

@@ -903,13 +903,37 @@ async function saveAndGoBack() {
 
 async function deleteNote(e, id) {
     e.stopPropagation();
-    if (!confirm('Delete this note?')) return;
+    showDeleteModal(id);
+}
+
+let pendingDeleteId = null;
+
+function showDeleteModal(id) {
+    pendingDeleteId = id;
+    document.getElementById('delete-modal')?.classList.add('show');
+}
+
+function closeDeleteModal() {
+    pendingDeleteId = null;
+    document.getElementById('delete-modal')?.classList.remove('show');
+}
+
+async function confirmDelete() {
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    closeDeleteModal();
     try {
         await window.firestoreDeleteDoc(window.firestoreDoc(window.firebaseDb, 'notes', id));
         showToast('Deleted', 'success');
         loadNotes();
     } catch (e) { showToast('Error deleting', 'error'); }
 }
+
+// Setup delete confirmation button listener
+document.addEventListener('DOMContentLoaded', () => {
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    if (confirmBtn) confirmBtn.onclick = confirmDelete;
+});
 
 // Toolbar
 function switchToolbarTab(tab) {
@@ -1140,5 +1164,5 @@ Object.assign(window, {
     applyPictureBorder, applyPictureOpacity, applyPictureRadius,
     applyShapeFill, applyShapeStroke, applyShapeStrokeWidth, applyShapeOpacity,
     applyCellBgColor, alignCellH, alignCellV, mergeCells, addTableRow, addTableColumn,
-    deleteTableRow, deleteTableColumn
+    deleteTableRow, deleteTableColumn, closeDeleteModal
 });

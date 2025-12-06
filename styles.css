@@ -1319,6 +1319,58 @@ body {
     background: var(--bg-secondary);
 }
 
+.modal-btn.danger {
+    background: #dc2626;
+    border: none;
+    color: white;
+}
+
+.modal-btn.danger:hover {
+    background: #b91c1c;
+}
+
+/* Delete Confirmation Modal */
+.delete-confirm-modal {
+    text-align: center;
+    padding: 32px 24px;
+}
+
+.delete-confirm-modal .delete-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(220, 38, 38, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.delete-confirm-modal .delete-icon .material-icons-round {
+    font-size: 32px;
+    color: #dc2626;
+}
+
+.delete-confirm-modal h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.delete-confirm-modal p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.delete-confirm-modal .modal-footer {
+    justify-content: center;
+    border-top: none;
+    padding-top: 0;
+}
+
 /* Shapes Modal */
 .shapes-instruction {
     color: var(--text-secondary);
