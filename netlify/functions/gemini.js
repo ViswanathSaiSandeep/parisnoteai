@@ -10,6 +10,7 @@ const headers = {
 
 exports.handler = async (event, context) => {
     console.log('Function invoked with method:', event.httpMethod);
+    console.log('Request body:', event.body);
 
     // Handle CORS preflight request
     if (event.httpMethod === 'OPTIONS') {
@@ -29,6 +30,7 @@ exports.handler = async (event, context) => {
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
     console.log('API Key exists:', !!GEMINI_API_KEY);
+    console.log('API Key length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
 
     if (!GEMINI_API_KEY) {
         console.error('GEMINI_API_KEY not found in environment variables');
@@ -40,16 +42,27 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        const requestBody = JSON.parse(event.body || '{}');
+        let requestBody;
+        try {
+            requestBody = JSON.parse(event.body || '{}');
+        } catch (parseError) {
+            console.error('JSON parse error:', parseError.message);
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Invalid JSON in request body', received: event.body })
+            };
+        }
+
         const { prompt } = requestBody;
 
-        console.log('Received prompt:', prompt ? 'yes' : 'no');
+        console.log('Received prompt:', prompt ? `"${prompt.substring(0, 50)}..."` : 'EMPTY');
 
         if (!prompt) {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Prompt is required' })
+                body: JSON.stringify({ error: 'Prompt is required', receivedBody: requestBody })
             };
         }
 
