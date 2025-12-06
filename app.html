@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PARIS NoteAI - AI-powered notes application with smart writing assistance">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>PARIS NoteAI</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/parisnoteai.png">
+    <link rel="apple-touch-icon" href="assets/parisnoteai.png">
+
+    <!-- Google Fonts - Product Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Product Sans';
+            src: local('Product Sans'), local('Google Sans'), local('Roboto');
+            font-weight: 400;
+        }
+
+        @font-face {
+            font-family: 'Product Sans';
+            src: local('Product Sans Medium'), local('Google Sans Medium'), local('Roboto Medium');
+            font-weight: 500;
+        }
+
+        @font-face {
+            font-family: 'Product Sans';
+            src: local('Product Sans Bold'), local('Google Sans Bold'), local('Roboto Bold');
+            font-weight: 700;
+        }
+    </style>
+
+    <!-- Hide Scrollbars Globally -->
+    <style>
+        /* Hide scrollbars but keep functionality */
+        * {
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
+        *::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari, Opera */
+        }
+
+        /* SVG Shape styling for selection and resize */
+        svg.shape {
+            display: inline-block;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        svg.shape.selected {
+            outline: 2px solid #4a90d9;
+            outline-offset: 2px;
+        }
+    </style>
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="screen active">
+        <header class="auth-header">
+            <div class="logo">
+                <img src="assets/parisnoteai.png" alt="PARIS NoteAI" class="logo-icon">
+                <span class="logo-text"><span class="logo-paris">PARIS</span> NoteAI</span>
+            </div>
+        </header>
+
+        <div class="auth-container">
+            <div id="login-form" class="auth-form active">
+                <h1 class="auth-title">Welcome Back</h1>
+
+                <div class="form-field">
+                    <label for="login-email">Enter your Email</label>
+                    <input type="email" id="login-email" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="login-password">Enter your Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+
+                <button type="button" class="auth-btn" onclick="handleLogin()">Sign In</button>
+
+                <p class="auth-switch">
+                    Don't have an account?
+                    <a href="#" onclick="switchAuthForm('signup')">Sign Up</a>
+                </p>
+            </div>
+
+            <div id="signup-form" class="auth-form">
+                <h1 class="auth-title">Create your Account</h1>
+
+                <div class="form-field">
+                    <label for="signup-name">Enter you Name</label>
+                    <input type="text" id="signup-name" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="signup-email">Enter your Email</label>
+                    <input type="email" id="signup-email" required>
+                </div>
+
+                <div class="form-field">
+                    <label for="signup-password">Enter your Password</label>
+                    <input type="password" id="signup-password" required>
+                </div>
+
+                <button type="button" class="auth-btn" onclick="handleSignup()">Create Account</button>
+
+                <p class="auth-switch">
+                    Already have an account?
+                    <a href="#" onclick="switchAuthForm('login')">Sign In</a>
+                </p>
+            </div>
+
+            <div id="auth-error" class="auth-error"></div>
+        </div>
+    </div>
+
+    <!-- Dashboard Screen -->
+    <div id="dashboard-screen" class="screen">
+        <header class="app-header">
+            <div class="logo">
+                <img src="assets/parisnoteai.png" alt="PARIS NoteAI" class="logo-icon">
+                <span class="logo-text"><span class="logo-paris">PARIS</span> NoteAI</span>
+            </div>
+
+            <div class="search-box">
+                <span class="material-icons-round">search</span>
+                <input type="text" id="search-input" placeholder="Search Notes" oninput="searchNotes(this.value)">
+            </div>
+
+            <div class="user-menu">
+                <button class="user-btn" onclick="toggleUserMenu()">
+                    <span class="material-icons-round">person</span>
+                </button>
+                <div id="user-dropdown" class="dropdown-menu">
+                    <div class="dropdown-header" id="user-email"></div>
+                    <button onclick="signOut()">
+                        <span class="material-icons-round">logout</span>
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            <div id="notes-container" class="notes-grid"></div>
+
+            <div id="empty-state" class="empty-state show">
+                <h2>No Notes Yet</h2>
+                <p>Create your first note</p>
+            </div>
+        </main>
+
+        <button id="create-note-fab" class="fab" onclick="createNewNote()">
+            <span class="material-icons-round">add</span>
+        </button>
+    </div>
+
+    <!-- Editor Screen -->
+    <div id="editor-screen" class="screen">
+        <header class="app-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="saveAndGoBack()">
+                    <span class="material-icons-round">arrow_back</span>
+                </button>
+                <div class="logo">
+                    <img src="assets/parisnoteai.png" alt="PARIS NoteAI" class="logo-icon">
+                    <span class="logo-text"><span class="logo-paris">PARIS</span> NoteAI</span>
+                </div>
+            </div>
+
+            <input type="text" id="note-title" class="note-title-input" placeholder="Untitled Note">
+
+            <div class="header-right">
+                <button class="editor-action-btn" onclick="document.execCommand('undo')" title="Undo">
+                    <span class="material-icons-round">undo</span>
+                </button>
+                <button class="editor-action-btn" onclick="document.execCommand('redo')" title="Redo">
+                    <span class="material-icons-round">redo</span>
+                </button>
+                <button class="save-btn" onclick="saveNote()">
+                    <span class="material-icons-round">save</span>
+                    <span>Save</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-tabs">
+                <button class="toolbar-tab active" data-tab="home" onclick="switchToolbarTab('home')">Home</button>
+                <button class="toolbar-tab" data-tab="insert" onclick="switchToolbarTab('insert')">Insert</button>
+                <button class="toolbar-tab" data-tab="format" onclick="switchToolbarTab('format')">Format</button>
+                <button class="toolbar-tab ai-tab" data-tab="ai" onclick="switchToolbarTab('ai')">
+                    <span class="paris-text">PARIS</span> <span class="ai-text">AI</span>
+                </button>
+            </div>
+
+            <!-- Home Tab Content -->
+            <div class="toolbar-content active" id="home-toolbar">
+                <div class="toolbar-section">
+                    <div class="toolbar-row">
+                        <select class="font-select" id="font-family" onchange="changeFontFamily(this.value)">
+                            <option value="Product Sans">Calibri</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Courier New">Courier New</option>
+                        </select>
+                        <select class="size-select" id="font-size" onchange="changeFontSize(this.value)">
+                            <option value="1">8</option>
+                            <option value="2">10</option>
+                            <option value="3" selected>11</option>
+                            <option value="4">14</option>
+                            <option value="5">18</option>
+                            <option value="6">24</option>
+                            <option value="7">36</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-row">
+                        <button class="tool-btn" onclick="formatText('bold')" title="Bold">
+                            <span style="font-weight:bold">B</span>
+                        </button>
+                        <button class="tool-btn" onclick="formatText('italic')" title="Italic">
+                            <span style="font-style:italic">I</span>
+                        </button>
+                        <button class="tool-btn" onclick="formatText('underline')" title="Underline">
+                            <span style="text-decoration:underline">U</span>
+                        </button>
+                        <button class="tool-btn color-btn" title="Highlight">
+                            <span class="material-icons-round">border_color</span>
+                            <input type="color" class="color-input" id="highlight-color" value="#ffff00"
+                                onchange="changeHighlight(this.value)">
+                        </button>
+                        <button class="tool-btn color-btn" title="Text Color">
+                            <span class="material-icons-round" style="color: #ff0000">format_color_text</span>
+                            <input type="color" class="color-input" id="text-color" value="#000000"
+                                onchange="changeTextColor(this.value)">
+                        </button>
+                    </div>
+                </div>
+
+                <div class="toolbar-divider"></div>
+
+                <div class="toolbar-section">
+                    <div class="toolbar-row">
+                        <button class="tool-btn" onclick="formatText('insertUnorderedList')" title="Bullet List">
+                            <span class="material-icons-round">format_list_bulleted</span>
+                        </button>
+                        <button class="tool-btn" onclick="formatText('insertOrderedList')" title="Numbered List">
+                            <span class="material-icons-round">format_list_numbered</span>
+                        </button>
+                        <button class="tool-btn" onclick="formatText('outdent')" title="Decrease Indent">
+                            <span class="material-icons-round">format_indent_decrease</span>
+                        </button>
+                        <button class="tool-btn" onclick="formatText('indent')" title="Increase Indent">
+                            <span class="material-icons-round">format_indent_increase</span>
+                        </button>
+                        <button class="tool-btn" onclick="insertQuote()" title="Quote">
+                            <span class="material-icons-round">format_quote</span>
+                        </button>
+                    </div>
+                    <div class="toolbar-row">
+                        <button class="tool-btn" onclick="formatText('justifyLeft')" title="Align Left">
+                            <span class="material-icons-round">format_align_left</span>
+                        </button>
+                        <button class="tool-btn" onclick="formatText('justifyCenter')" title="Align Center">
+                            <span class="material-icons-round">format_align_center</span>
+                        </button>
+                        <button class="tool-btn" onclick="formatText('justifyRight')" title="Align Right">
+                            <span class="material-icons-round">format_align_right</span>
+                        </button>
+                        <button class="tool-btn" onclick="formatText('justifyFull')" title="Justify">
+                            <span class="material-icons-round">format_align_justify</span>
+                        </button>
+                        <button class="tool-btn" onclick="changeLineSpacing()" title="Line Spacing">
+                            <span class="material-icons-round">format_line_spacing</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="toolbar-divider"></div>
+
+                <div class="toolbar-section actions-section">
+                    <button class="action-btn" onclick="showFindReplace('find')">
+                        <span class="material-icons-round">search</span>
+                        <span>Find</span>
+                    </button>
+                    <button class="action-btn" onclick="showFindReplace('replace')">
+                        <span class="material-icons-round">find_replace</span>
+                        <span>Replace</span>
+                    </button>
+                    <button class="action-btn" onclick="selectAllText()">
+                        <span class="material-icons-round">select_all</span>
+                        <span>Select</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Insert Tab Content -->
+            <div class="toolbar-content" id="insert-toolbar">
+                <div class="insert-items">
+                    <button class="insert-btn" onclick="showTableDialog()">
+                        <span class="material-icons-round">table_chart</span>
+                        <span>Table</span>
+                    </button>
+                    <button class="insert-btn" onclick="insertImageFromComputer()">
+                        <span class="material-icons-round">image</span>
+                        <span>Pictures</span>
+                    </button>
+                    <button class="insert-btn" onclick="insertHeading('h1')">
+                        <span class="material-icons-round">title</span>
+                        <span>Header</span>
+                    </button>
+                    <button class="insert-btn" onclick="insertDivider()">
+                        <span class="material-icons-round">horizontal_rule</span>
+                        <span>Divider</span>
+                    </button>
+                    <button class="insert-btn" onclick="insertLink()">
+                        <span class="material-icons-round">link</span>
+                        <span>Link</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Format Tab Content - MODERN DYNAMIC -->
+            <div class="toolbar-content" id="format-toolbar">
+                <!-- Default: No selection message -->
+                <div id="format-none" class="format-message">
+                    <span class="material-icons-round">touch_app</span>
+                    <span>Select an image, shape, or table to format</span>
+                </div>
+
+                <!-- Picture Format Options -->
+                <div id="format-picture" class="format-panel" style="display:none;">
+                    <div class="format-group">
+                        <div class="format-group-title">PICTURE</div>
+                        <div class="format-controls">
+                            <div class="format-control">
+                                <label>Border</label>
+                                <input type="color" id="pic-border-color" value="#000000"
+                                    onchange="applyPictureBorder()">
+                            </div>
+                            <div class="format-control">
+                                <label>Width</label>
+                                <input type="number" id="pic-border-width" value="0" min="0" max="20"
+                                    onchange="applyPictureBorder()">
+                            </div>
+                            <div class="format-control slider-control">
+                                <label>Opacity</label>
+                                <input type="range" id="pic-opacity" value="100" min="0" max="100"
+                                    oninput="applyPictureOpacity(this.value)">
+                                <span id="pic-opacity-val">100%</span>
+                            </div>
+                            <div class="format-control">
+                                <label>Radius</label>
+                                <input type="number" id="pic-radius" value="0" min="0" max="100"
+                                    onchange="applyPictureRadius(this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shape Format Options -->
+                <div id="format-shape" class="format-panel" style="display:none;">
+                    <div class="format-group">
+                        <div class="format-group-title">SHAPE</div>
+                        <div class="format-controls">
+                            <div class="format-control">
+                                <label>Fill</label>
+                                <input type="color" id="shape-fill" value="#4472C4"
+                                    onchange="applyShapeFill(this.value)">
+                            </div>
+                            <div class="format-control">
+                                <label>Stroke</label>
+                                <input type="color" id="shape-stroke" value="#2F528F"
+                                    onchange="applyShapeStroke(this.value)">
+                            </div>
+                            <div class="format-control">
+                                <label>Stroke Width</label>
+                                <input type="number" id="shape-stroke-width" value="2" min="0" max="20"
+                                    onchange="applyShapeStrokeWidth(this.value)">
+                            </div>
+                            <div class="format-control slider-control">
+                                <label>Opacity</label>
+                                <input type="range" id="shape-opacity" value="100" min="0" max="100"
+                                    oninput="applyShapeOpacity(this.value)">
+                                <span id="shape-opacity-val">100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Format Options -->
+                <div id="format-table" class="format-panel" style="display:none;">
+                    <div class="format-group">
+                        <div class="format-group-title">TABLE</div>
+                        <div class="format-controls">
+                            <div class="format-control">
+                                <label>Cell Color</label>
+                                <input type="color" id="cell-color" value="#ffffff"
+                                    onchange="applyCellBgColor(this.value)">
+                            </div>
+                            <div class="format-btn-group">
+                                <button class="fmt-btn" onclick="alignCellH('left')" title="Align Left">
+                                    <span class="material-icons-round">format_align_left</span>
+                                </button>
+                                <button class="fmt-btn" onclick="alignCellH('center')" title="Align Center">
+                                    <span class="material-icons-round">format_align_center</span>
+                                </button>
+                                <button class="fmt-btn" onclick="alignCellH('right')" title="Align Right">
+                                    <span class="material-icons-round">format_align_right</span>
+                                </button>
+                            </div>
+                            <div class="format-btn-group">
+                                <button class="fmt-btn" onclick="alignCellV('top')" title="Align Top">
+                                    <span class="material-icons-round">vertical_align_top</span>
+                                </button>
+                                <button class="fmt-btn" onclick="alignCellV('middle')" title="Align Middle">
+                                    <span class="material-icons-round">vertical_align_center</span>
+                                </button>
+                                <button class="fmt-btn" onclick="alignCellV('bottom')" title="Align Bottom">
+                                    <span class="material-icons-round">vertical_align_bottom</span>
+                                </button>
+                            </div>
+                            <button class="fmt-btn wide" onclick="mergeCells()">
+                                <span class="material-icons-round">call_merge</span> Merge
+                            </button>
+                            <button class="fmt-btn" onclick="addTableRow()" title="Add Row">
+                                <span class="material-icons-round">add</span> Row
+                            </button>
+                            <button class="fmt-btn" onclick="addTableColumn()" title="Add Column">
+                                <span class="material-icons-round">add</span> Col
+                            </button>
+                            <button class="fmt-btn danger" onclick="deleteTableRow()" title="Delete Row">
+                                <span class="material-icons-round">remove</span> Row
+                            </button>
+                            <button class="fmt-btn danger" onclick="deleteTableColumn()" title="Delete Column">
+                                <span class="material-icons-round">remove</span> Col
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Tab Content -->
+            <div class="toolbar-content" id="ai-toolbar">
+                <div class="ai-buttons">
+                    <button class="ai-pill-btn" onclick="aiRewrite()">Rewrite</button>
+                    <button class="ai-pill-btn" onclick="aiCompose()">Compose</button>
+                    <button class="ai-pill-btn" onclick="aiRefine()">Refine</button>
+                    <div class="ai-styles-dropdown">
+                        <button class="ai-pill-btn" onclick="toggleStylesDropdown()">
+                            Styles
+                            <span class="material-icons-round">expand_more</span>
+                        </button>
+                        <div class="styles-dropdown" id="styles-dropdown">
+                            <button onclick="applyStyle('fun')">😄 Fun</button>
+                            <button onclick="applyStyle('professional')">💼 Professional</button>
+                            <button onclick="applyStyle('casual')">☕ Casual</button>
+                            <div class="custom-style">
+                                <input type="text" id="custom-style" placeholder="Custom style...">
+                                <button onclick="applyCustomStyle()">
+                                    <span class="material-icons-round">send</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Editor Area -->
+        <div class="editor-container" id="editor-container">
+            <div class="editor-wrapper">
+                <div id="editor" class="editor" contenteditable="true"></div>
+            </div>
+        </div>
+
+        <!-- Hidden file input for image upload -->
+        <input type="file" id="image-upload" accept="image/*" style="display: none;"
+            onchange="handleImageUpload(event)">
+
+        <!-- Resize Handles Container (for selected elements) -->
+        <div id="resize-handles" class="resize-handles" style="display:none;">
+            <div class="resize-handle nw" data-dir="nw"></div>
+            <div class="resize-handle n" data-dir="n"></div>
+            <div class="resize-handle ne" data-dir="ne"></div>
+            <div class="resize-handle e" data-dir="e"></div>
+            <div class="resize-handle se" data-dir="se"></div>
+            <div class="resize-handle s" data-dir="s"></div>
+            <div class="resize-handle sw" data-dir="sw"></div>
+            <div class="resize-handle w" data-dir="w"></div>
+            <div class="rotate-handle" title="Rotate"></div>
+        </div>
+
+        <!-- Table Move/Resize Handle -->
+        <div id="table-handle" class="table-handle" style="display:none;">
+            <div class="table-move-handle" title="Move Table">
+                <span class="material-icons-round">open_with</span>
+            </div>
+        </div>
+
+        <!-- AI Loading Overlay -->
+        <div id="ai-loading" class="ai-loading">
+            <div class="ai-loading-content">
+                <img src="assets/paris_ai_logo_no_bg (1) (2).png" alt="PARIS AI" class="ai-loading-logo">
+                <div class="ai-loading-text"><span style="color: #ffffff; font-weight: bold;">PARIS</span> <span
+                        style="color: #06439A; font-weight: bold;">AI</span> is thinking...</div>
+                <div class="ai-loading-spinner"></div>
+            </div>
+        </div>
+
+        <!-- Save Notification -->
+        <div id="save-notification" class="save-notification">
+            <span class="material-icons-round">check_circle</span>
+            <span>Note is saved</span>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Compose Modal -->
+    <div id="compose-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Compose with <span style="color: #ffffff;">PARIS</span> <span style="color: #06439A;">AI</span></h2>
+                <button class="modal-close" onclick="closeComposeModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea id="compose-prompt" placeholder="Describe what you want to write about..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeComposeModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="generateCompose()">Generate</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Output Modal -->
+    <div id="ai-output-modal" class="modal">
+        <div class="modal-content" style="max-width: 950px; width: 95%;">
+            <div class="modal-header">
+                <h2 id="ai-output-title"><span style="color: #ffffff;">PARIS</span> <span
+                        style="color: #06439A;">AI</span> Output</h2>
+                <button class="modal-close" onclick="closeAIOutputModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 0 !important;">
+                <div
+                    style="display: flex !important; flex-direction: row !important; min-height: 280px; max-height: 350px;">
+                    <!-- Left Panel - Original Text -->
+                    <div
+                        style="flex: 1; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; min-width: 0;">
+                        <div
+                            style="margin-bottom: 12px; font-weight: 600; color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+                            Original Text</div>
+                        <div id="ai-original-text"
+                            style="flex: 1; overflow-y: auto; line-height: 1.7; color: #aaa; font-size: 14px; padding-right: 8px;">
+                        </div>
+                    </div>
+                    <!-- Right Panel - AI Generated -->
+                    <div
+                        style="flex: 1; padding: 20px; background: rgba(129, 140, 248, 0.08); display: flex; flex-direction: column; min-width: 0;">
+                        <div
+                            style="margin-bottom: 12px; font-weight: 600; color: #818cf8; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+                            AI Generated</div>
+                        <div id="ai-generated-text"
+                            style="flex: 1; overflow-y: auto; line-height: 1.7; color: #e0e0e0; font-size: 14px; padding-right: 8px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeAIOutputModal()">Cancel</button>
+                <button class="modal-btn secondary" onclick="copyAIOutput()">
+                    <span class="material-icons-round">content_copy</span>
+                    Copy
+                </button>
+                <button class="modal-btn primary" onclick="insertAIOutput()">
+                    <span class="material-icons-round">check</span>
+                    Insert
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Dialog -->
+    <div id="table-modal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Insert Table</h2>
+                <button class="modal-close" onclick="closeTableModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="table-rows">Number of Rows</label>
+                    <input type="number" id="table-rows" value="4" min="1" max="20">
+                </div>
+                <div class="form-field">
+                    <label for="table-cols">Number of Columns</label>
+                    <input type="number" id="table-cols" value="5" min="1" max="10">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeTableModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="insertTableWithSize()">Insert</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shapes Dialog -->
+    <div id="shapes-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Draw Shape</h2>
+                <button class="modal-close" onclick="closeShapesModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="shapes-instruction">Click a shape, then drag on the editor to draw it.</p>
+                <div class="shapes-section">
+                    <div class="shapes-label">Basic Shapes</div>
+                    <div class="shapes-grid">
+                        <button class="shape-btn" onclick="selectShapeToDraw('circle')" title="Circle">
+                            <svg viewBox="0 0 40 40">
+                                <circle cx="20" cy="20" r="16" fill="currentColor" />
+                            </svg>
+                        </button>
+                        <button class="shape-btn" onclick="selectShapeToDraw('rectangle')" title="Rectangle">
+                            <svg viewBox="0 0 40 40">
+                                <rect x="4" y="8" width="32" height="24" fill="currentColor" />
+                            </svg>
+                        </button>
+                        <button class="shape-btn" onclick="selectShapeToDraw('rounded-rect')" title="Rounded Rectangle">
+                            <svg viewBox="0 0 40 40">
+                                <rect x="4" y="8" width="32" height="24" rx="6" fill="currentColor" />
+                            </svg>
+                        </button>
+                        <button class="shape-btn" onclick="selectShapeToDraw('triangle')" title="Triangle">
+                            <svg viewBox="0 0 40 40">
+                                <polygon points="20,4 36,36 4,36" fill="currentColor" />
+                            </svg>
+                        </button>
+                        <button class="shape-btn" onclick="selectShapeToDraw('line')" title="Line">
+                            <svg viewBox="0 0 40 40">
+                                <line x1="4" y1="36" x2="36" y2="4" stroke="currentColor" stroke-width="3" />
+                            </svg>
+                        </button>
+                        <button class="shape-btn" onclick="selectShapeToDraw('diamond')" title="Diamond">
+                            <svg viewBox="0 0 40 40">
+                                <polygon points="20,2 38,20 20,38 2,20" fill="currentColor" />
+                            </svg>
+                        </button>
+                        <button class="shape-btn" onclick="selectShapeToDraw('star')" title="Star">
+                            <svg viewBox="0 0 40 40">
+                                <polygon points="20,2 25,15 38,15 28,24 32,38 20,30 8,38 12,24 2,15 15,15"
+                                    fill="currentColor" />
+                            </svg>
+                        </button>
+                        <button class="shape-btn" onclick="selectShapeToDraw('arrow')" title="Arrow">
+                            <svg viewBox="0 0 40 40">
+                                <polygon points="38,20 22,4 22,14 2,14 2,26 22,26 22,36" fill="currentColor" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="shapes-options">
+                    <div class="shapes-label">Shape Options</div>
+                    <div class="shape-option-row">
+                        <label>Fill Color</label>
+                        <input type="color" id="shape-fill-color" value="#4472C4">
+                    </div>
+                    <div class="shape-option-row">
+                        <label>Border Color</label>
+                        <input type="color" id="shape-border-color" value="#2F528F">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Find/Replace Modal -->
+    <div id="find-modal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2 id="find-modal-title">Find</h2>
+                <button class="modal-close" onclick="closeFindModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="find-input">Find</label>
+                    <input type="text" id="find-input">
+                </div>
+                <div id="replace-field" class="form-field" style="display: none;">
+                    <label for="replace-input">Replace with</label>
+                    <input type="text" id="replace-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeFindModal()">Close</button>
+                <button class="modal-btn primary" onclick="executeFind()">Find</button>
+                <button id="replace-btn" class="modal-btn primary" onclick="executeReplace()"
+                    style="display: none;">Replace All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content modal-small delete-confirm-modal">
+            <div class="delete-icon">
+                <span class="material-icons-round">delete_forever</span>
+            </div>
+            <h2>Delete Note?</h2>
+            <p>Are you sure you want to delete this note? This action cannot be undone.</p>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button class="modal-btn danger" id="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Title Prompt Modal -->
+    <div id="title-modal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Name Your Note</h2>
+                <button class="modal-close" onclick="closeTitleModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="title-input">Enter a title for your note</label>
+                    <input type="text" id="title-input" placeholder="My Note">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeTitleModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="saveWithTitle()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCq0mJi8waAyXtv0mN9RmBISKTY_o7bA_g",
+            authDomain: "ai-notes-8522b.firebaseapp.com",
+            projectId: "ai-notes-8522b",
+            storageBucket: "ai-notes-8522b.firebasestorage.app",
+            messagingSenderId: "163002780104",
+            appId: "1:163002780104:web:c9c1392695c54c21e8d8fd",
+            measurementId: "G-VKHHN51N7R"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseCreateUser = createUserWithEmailAndPassword;
+        window.firebaseSignIn = signInWithEmailAndPassword;
+        window.firebaseSignOut = firebaseSignOut;
+        window.firebaseOnAuthStateChanged = onAuthStateChanged;
+        window.firebaseUpdateProfile = updateProfile;
+        window.firestoreCollection = collection;
+        window.firestoreDoc = doc;
+        window.firestoreGetDocs = getDocs;
+        window.firestoreGetDoc = getDoc;
+        window.firestoreAddDoc = addDoc;
+        window.firestoreUpdateDoc = updateDoc;
+        window.firestoreDeleteDoc = deleteDoc;
+        window.firestoreQuery = query;
+        window.firestoreWhere = where;
+        window.firestoreOrderBy = orderBy;
+        window.firestoreServerTimestamp = serverTimestamp;
+
+        window.dispatchEvent(new Event('firebase-ready'));
+    </script>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

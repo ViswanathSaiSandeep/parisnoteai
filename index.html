@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="PARIS NoteAI - AI-powered notes application with smart writing assistance">
     <meta name="theme-color" content="#0a0a0a">
-    <title>PARIS NoteAI</title>
+    <title>PARIS NoteAI - AI-Powered Notes</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/parisnoteai.png">
@@ -36,762 +36,593 @@
         }
     </style>
 
-    <!-- Hide Scrollbars Globally -->
-    <style>
-        /* Hide scrollbars but keep functionality */
-        * {
-            scrollbar-width: none;
-            /* Firefox */
-            -ms-overflow-style: none;
-            /* IE and Edge */
-        }
-
-        *::-webkit-scrollbar {
-            display: none;
-            /* Chrome, Safari, Opera */
-        }
-
-        /* SVG Shape styling for selection and resize */
-        svg.shape {
-            display: inline-block;
-            cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        svg.shape.selected {
-            outline: 2px solid #4a90d9;
-            outline-offset: 2px;
-        }
-    </style>
-
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Product Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Navigation */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 60px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .logo-paris {
+            color: #ffffff;
+        }
+
+        .logo-ai {
+            color: #06439A;
+        }
+
+        .nav-btn {
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn.primary {
+            background: #ffffff;
+            color: #0a0a0a;
+            border: none;
+        }
+
+        .nav-btn.primary:hover {
+            background: #e5e5e5;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 24px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Cursor-following glow */
+        .cursor-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(6, 67, 154, 0.25) 0%, rgba(74, 144, 217, 0.1) 30%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease-out, opacity 0.3s ease;
+            filter: blur(40px);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(6, 67, 154, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            margin-bottom: 32px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero-badge span {
+            background: linear-gradient(135deg, #06439A, #4a90d9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 600;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            max-width: 900px;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .hero h1 .line1 {
+            display: block;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.6em;
+            font-weight: 400;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .hero h1 .paris-white {
+            color: #ffffff;
+        }
+
+        .hero h1 .ai-blue {
+            color: #06439A;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: #888;
+            max-width: 600px;
+            margin-bottom: 48px;
+            line-height: 1.6;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeInUp 0.8s ease-out 0.8s both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn.primary {
+            background: #ffffff;
+            color: #0a0a0a;
+            border: none;
+        }
+
+        .btn.primary:hover {
+            background: #e5e5e5;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.15);
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 60px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px 32px;
+            transition: all 0.4s ease;
+            animation: fadeInUp 0.8s ease-out both;
+        }
+
+        .feature-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .feature-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .feature-card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .feature-card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .feature-card:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .feature-card:nth-child(6) {
+            animation-delay: 0.6s;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-8px);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(6, 67, 154, 0.2), rgba(74, 144, 217, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1);
+        }
+
+        .feature-icon .material-icons-round {
+            font-size: 28px;
+            color: #4a90d9;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: #888;
+            line-height: 1.6;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 100px 60px;
+            text-align: center;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, rgba(6, 67, 154, 0.1), rgba(74, 144, 217, 0.05));
+            border: 1px solid rgba(74, 144, 217, 0.2);
+            border-radius: 32px;
+            padding: 80px 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease-out;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-box:hover {
+            transform: scale(1.02);
+        }
+
+        .cta h2 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .cta p {
+            color: #888;
+            font-size: 1.1rem;
+            margin-bottom: 32px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 60px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px 24px;
+            }
+
+            .features,
+            .cta {
+                padding: 60px 24px;
+            }
+
+            footer {
+                padding: 30px 24px;
+            }
+
+            .hero h1 .line1 {
+                font-size: 0.5em;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <!-- Auth Screen -->
-    <div id="auth-screen" class="screen active">
-        <header class="auth-header">
-            <div class="logo">
-                <img src="assets/parisnoteai.png" alt="PARIS NoteAI" class="logo-icon">
-                <span class="logo-text"><span class="logo-paris">PARIS</span> NoteAI</span>
-            </div>
-        </header>
-
-        <div class="auth-container">
-            <div id="login-form" class="auth-form active">
-                <h1 class="auth-title">Welcome Back</h1>
-
-                <div class="form-field">
-                    <label for="login-email">Enter your Email</label>
-                    <input type="email" id="login-email" required>
-                </div>
-
-                <div class="form-field">
-                    <label for="login-password">Enter your Password</label>
-                    <input type="password" id="login-password" required>
-                </div>
-
-                <button type="button" class="auth-btn" onclick="handleLogin()">Sign In</button>
-
-                <p class="auth-switch">
-                    Don't have an account?
-                    <a href="#" onclick="switchAuthForm('signup')">Sign Up</a>
-                </p>
-            </div>
-
-            <div id="signup-form" class="auth-form">
-                <h1 class="auth-title">Create your Account</h1>
-
-                <div class="form-field">
-                    <label for="signup-name">Enter you Name</label>
-                    <input type="text" id="signup-name" required>
-                </div>
-
-                <div class="form-field">
-                    <label for="signup-email">Enter your Email</label>
-                    <input type="email" id="signup-email" required>
-                </div>
-
-                <div class="form-field">
-                    <label for="signup-password">Enter your Password</label>
-                    <input type="password" id="signup-password" required>
-                </div>
-
-                <button type="button" class="auth-btn" onclick="handleSignup()">Create Account</button>
-
-                <p class="auth-switch">
-                    Already have an account?
-                    <a href="#" onclick="switchAuthForm('login')">Sign In</a>
-                </p>
-            </div>
-
-            <div id="auth-error" class="auth-error"></div>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="assets/parisnoteai.png" alt="PARIS NoteAI">
+            <span class="logo-text"><span class="logo-paris">PARIS</span> <span class="logo-ai">NoteAI</span></span>
         </div>
-    </div>
+        <a href="app.html" class="nav-btn primary">Open App</a>
+    </nav>
 
-    <!-- Dashboard Screen -->
-    <div id="dashboard-screen" class="screen">
-        <header class="app-header">
-            <div class="logo">
-                <img src="assets/parisnoteai.png" alt="PARIS NoteAI" class="logo-icon">
-                <span class="logo-text"><span class="logo-paris">PARIS</span> NoteAI</span>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span>✨ AI-Powered</span>
+            Note Taking
+        </div>
+        <h1>
+            <span class="line1">Write Smarter with</span>
+            <span class="paris-white">PARIS</span> <span class="ai-blue">NoteAI</span>
+        </h1>
+        <p>Transform your note-taking experience with AI-powered writing assistance. Compose, rewrite, and refine your
+            notes effortlessly.</p>
+        <div class="hero-buttons">
+            <a href="app.html" class="btn primary">
+                <span class="material-icons-round">edit_note</span>
+                Start Writing
+            </a>
+            <a href="#features" class="btn secondary">
+                <span class="material-icons-round">info</span>
+                Learn More
+            </a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <h2>Powerful Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons-round">auto_awesome</span>
+                </div>
+                <h3>AI Compose</h3>
+                <p>Describe what you want to write and let PARIS AI generate content for you instantly.</p>
             </div>
-
-            <div class="search-box">
-                <span class="material-icons-round">search</span>
-                <input type="text" id="search-input" placeholder="Search Notes" oninput="searchNotes(this.value)">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons-round">edit</span>
+                </div>
+                <h3>Smart Rewrite</h3>
+                <p>Select any text and rewrite it with improved clarity and better structure.</p>
             </div>
-
-            <div class="user-menu">
-                <button class="user-btn" onclick="toggleUserMenu()">
-                    <span class="material-icons-round">person</span>
-                </button>
-                <div id="user-dropdown" class="dropdown-menu">
-                    <div class="dropdown-header" id="user-email"></div>
-                    <button onclick="signOut()">
-                        <span class="material-icons-round">logout</span>
-                        Sign Out
-                    </button>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons-round">psychology</span>
                 </div>
+                <h3>Style Transfer</h3>
+                <p>Transform your writing style - make it professional, casual, or fun with one click.</p>
             </div>
-        </header>
-
-        <main class="dashboard-content">
-            <div id="notes-container" class="notes-grid"></div>
-
-            <div id="empty-state" class="empty-state show">
-                <h2>No Notes Yet</h2>
-                <p>Create your first note</p>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons-round">cloud_sync</span>
+                </div>
+                <h3>Cloud Sync</h3>
+                <p>Your notes are securely stored and synced across all your devices in real-time.</p>
             </div>
-        </main>
-
-        <button id="create-note-fab" class="fab" onclick="createNewNote()">
-            <span class="material-icons-round">add</span>
-        </button>
-    </div>
-
-    <!-- Editor Screen -->
-    <div id="editor-screen" class="screen">
-        <header class="app-header">
-            <div class="header-left">
-                <button class="back-btn" onclick="saveAndGoBack()">
-                    <span class="material-icons-round">arrow_back</span>
-                </button>
-                <div class="logo">
-                    <img src="assets/parisnoteai.png" alt="PARIS NoteAI" class="logo-icon">
-                    <span class="logo-text"><span class="logo-paris">PARIS</span> NoteAI</span>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons-round">format_shapes</span>
                 </div>
+                <h3>Rich Formatting</h3>
+                <p>Full formatting toolbar with tables, images and more for beautiful notes.</p>
             </div>
-
-            <input type="text" id="note-title" class="note-title-input" placeholder="Untitled Note">
-
-            <div class="header-right">
-                <button class="editor-action-btn" onclick="document.execCommand('undo')" title="Undo">
-                    <span class="material-icons-round">undo</span>
-                </button>
-                <button class="editor-action-btn" onclick="document.execCommand('redo')" title="Redo">
-                    <span class="material-icons-round">redo</span>
-                </button>
-                <button class="save-btn" onclick="saveNote()">
-                    <span class="material-icons-round">save</span>
-                    <span>Save</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Toolbar -->
-        <div class="toolbar">
-            <div class="toolbar-tabs">
-                <button class="toolbar-tab active" data-tab="home" onclick="switchToolbarTab('home')">Home</button>
-                <button class="toolbar-tab" data-tab="insert" onclick="switchToolbarTab('insert')">Insert</button>
-                <button class="toolbar-tab" data-tab="format" onclick="switchToolbarTab('format')">Format</button>
-                <button class="toolbar-tab ai-tab" data-tab="ai" onclick="switchToolbarTab('ai')">
-                    <span class="paris-text">PARIS</span> <span class="ai-text">AI</span>
-                </button>
-            </div>
-
-            <!-- Home Tab Content -->
-            <div class="toolbar-content active" id="home-toolbar">
-                <div class="toolbar-section">
-                    <div class="toolbar-row">
-                        <select class="font-select" id="font-family" onchange="changeFontFamily(this.value)">
-                            <option value="Product Sans">Calibri</option>
-                            <option value="Arial">Arial</option>
-                            <option value="Times New Roman">Times New Roman</option>
-                            <option value="Georgia">Georgia</option>
-                            <option value="Courier New">Courier New</option>
-                        </select>
-                        <select class="size-select" id="font-size" onchange="changeFontSize(this.value)">
-                            <option value="1">8</option>
-                            <option value="2">10</option>
-                            <option value="3" selected>11</option>
-                            <option value="4">14</option>
-                            <option value="5">18</option>
-                            <option value="6">24</option>
-                            <option value="7">36</option>
-                        </select>
-                    </div>
-                    <div class="toolbar-row">
-                        <button class="tool-btn" onclick="formatText('bold')" title="Bold">
-                            <span style="font-weight:bold">B</span>
-                        </button>
-                        <button class="tool-btn" onclick="formatText('italic')" title="Italic">
-                            <span style="font-style:italic">I</span>
-                        </button>
-                        <button class="tool-btn" onclick="formatText('underline')" title="Underline">
-                            <span style="text-decoration:underline">U</span>
-                        </button>
-                        <button class="tool-btn color-btn" title="Highlight">
-                            <span class="material-icons-round">border_color</span>
-                            <input type="color" class="color-input" id="highlight-color" value="#ffff00"
-                                onchange="changeHighlight(this.value)">
-                        </button>
-                        <button class="tool-btn color-btn" title="Text Color">
-                            <span class="material-icons-round" style="color: #ff0000">format_color_text</span>
-                            <input type="color" class="color-input" id="text-color" value="#000000"
-                                onchange="changeTextColor(this.value)">
-                        </button>
-                    </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <span class="material-icons-round">security</span>
                 </div>
-
-                <div class="toolbar-divider"></div>
-
-                <div class="toolbar-section">
-                    <div class="toolbar-row">
-                        <button class="tool-btn" onclick="formatText('insertUnorderedList')" title="Bullet List">
-                            <span class="material-icons-round">format_list_bulleted</span>
-                        </button>
-                        <button class="tool-btn" onclick="formatText('insertOrderedList')" title="Numbered List">
-                            <span class="material-icons-round">format_list_numbered</span>
-                        </button>
-                        <button class="tool-btn" onclick="formatText('outdent')" title="Decrease Indent">
-                            <span class="material-icons-round">format_indent_decrease</span>
-                        </button>
-                        <button class="tool-btn" onclick="formatText('indent')" title="Increase Indent">
-                            <span class="material-icons-round">format_indent_increase</span>
-                        </button>
-                        <button class="tool-btn" onclick="insertQuote()" title="Quote">
-                            <span class="material-icons-round">format_quote</span>
-                        </button>
-                    </div>
-                    <div class="toolbar-row">
-                        <button class="tool-btn" onclick="formatText('justifyLeft')" title="Align Left">
-                            <span class="material-icons-round">format_align_left</span>
-                        </button>
-                        <button class="tool-btn" onclick="formatText('justifyCenter')" title="Align Center">
-                            <span class="material-icons-round">format_align_center</span>
-                        </button>
-                        <button class="tool-btn" onclick="formatText('justifyRight')" title="Align Right">
-                            <span class="material-icons-round">format_align_right</span>
-                        </button>
-                        <button class="tool-btn" onclick="formatText('justifyFull')" title="Justify">
-                            <span class="material-icons-round">format_align_justify</span>
-                        </button>
-                        <button class="tool-btn" onclick="changeLineSpacing()" title="Line Spacing">
-                            <span class="material-icons-round">format_line_spacing</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="toolbar-divider"></div>
-
-                <div class="toolbar-section actions-section">
-                    <button class="action-btn" onclick="showFindReplace('find')">
-                        <span class="material-icons-round">search</span>
-                        <span>Find</span>
-                    </button>
-                    <button class="action-btn" onclick="showFindReplace('replace')">
-                        <span class="material-icons-round">find_replace</span>
-                        <span>Replace</span>
-                    </button>
-                    <button class="action-btn" onclick="selectAllText()">
-                        <span class="material-icons-round">select_all</span>
-                        <span>Select</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Insert Tab Content -->
-            <div class="toolbar-content" id="insert-toolbar">
-                <div class="insert-items">
-                    <button class="insert-btn" onclick="showTableDialog()">
-                        <span class="material-icons-round">table_chart</span>
-                        <span>Table</span>
-                    </button>
-                    <button class="insert-btn" onclick="insertImageFromComputer()">
-                        <span class="material-icons-round">image</span>
-                        <span>Pictures</span>
-                    </button>
-                    <button class="insert-btn" onclick="insertHeading('h1')">
-                        <span class="material-icons-round">title</span>
-                        <span>Header</span>
-                    </button>
-                    <button class="insert-btn" onclick="insertDivider()">
-                        <span class="material-icons-round">horizontal_rule</span>
-                        <span>Divider</span>
-                    </button>
-                    <button class="insert-btn" onclick="insertLink()">
-                        <span class="material-icons-round">link</span>
-                        <span>Link</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Format Tab Content - MODERN DYNAMIC -->
-            <div class="toolbar-content" id="format-toolbar">
-                <!-- Default: No selection message -->
-                <div id="format-none" class="format-message">
-                    <span class="material-icons-round">touch_app</span>
-                    <span>Select an image, shape, or table to format</span>
-                </div>
-
-                <!-- Picture Format Options -->
-                <div id="format-picture" class="format-panel" style="display:none;">
-                    <div class="format-group">
-                        <div class="format-group-title">PICTURE</div>
-                        <div class="format-controls">
-                            <div class="format-control">
-                                <label>Border</label>
-                                <input type="color" id="pic-border-color" value="#000000"
-                                    onchange="applyPictureBorder()">
-                            </div>
-                            <div class="format-control">
-                                <label>Width</label>
-                                <input type="number" id="pic-border-width" value="0" min="0" max="20"
-                                    onchange="applyPictureBorder()">
-                            </div>
-                            <div class="format-control slider-control">
-                                <label>Opacity</label>
-                                <input type="range" id="pic-opacity" value="100" min="0" max="100"
-                                    oninput="applyPictureOpacity(this.value)">
-                                <span id="pic-opacity-val">100%</span>
-                            </div>
-                            <div class="format-control">
-                                <label>Radius</label>
-                                <input type="number" id="pic-radius" value="0" min="0" max="100"
-                                    onchange="applyPictureRadius(this.value)">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Shape Format Options -->
-                <div id="format-shape" class="format-panel" style="display:none;">
-                    <div class="format-group">
-                        <div class="format-group-title">SHAPE</div>
-                        <div class="format-controls">
-                            <div class="format-control">
-                                <label>Fill</label>
-                                <input type="color" id="shape-fill" value="#4472C4"
-                                    onchange="applyShapeFill(this.value)">
-                            </div>
-                            <div class="format-control">
-                                <label>Stroke</label>
-                                <input type="color" id="shape-stroke" value="#2F528F"
-                                    onchange="applyShapeStroke(this.value)">
-                            </div>
-                            <div class="format-control">
-                                <label>Stroke Width</label>
-                                <input type="number" id="shape-stroke-width" value="2" min="0" max="20"
-                                    onchange="applyShapeStrokeWidth(this.value)">
-                            </div>
-                            <div class="format-control slider-control">
-                                <label>Opacity</label>
-                                <input type="range" id="shape-opacity" value="100" min="0" max="100"
-                                    oninput="applyShapeOpacity(this.value)">
-                                <span id="shape-opacity-val">100%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Table Format Options -->
-                <div id="format-table" class="format-panel" style="display:none;">
-                    <div class="format-group">
-                        <div class="format-group-title">TABLE</div>
-                        <div class="format-controls">
-                            <div class="format-control">
-                                <label>Cell Color</label>
-                                <input type="color" id="cell-color" value="#ffffff"
-                                    onchange="applyCellBgColor(this.value)">
-                            </div>
-                            <div class="format-btn-group">
-                                <button class="fmt-btn" onclick="alignCellH('left')" title="Align Left">
-                                    <span class="material-icons-round">format_align_left</span>
-                                </button>
-                                <button class="fmt-btn" onclick="alignCellH('center')" title="Align Center">
-                                    <span class="material-icons-round">format_align_center</span>
-                                </button>
-                                <button class="fmt-btn" onclick="alignCellH('right')" title="Align Right">
-                                    <span class="material-icons-round">format_align_right</span>
-                                </button>
-                            </div>
-                            <div class="format-btn-group">
-                                <button class="fmt-btn" onclick="alignCellV('top')" title="Align Top">
-                                    <span class="material-icons-round">vertical_align_top</span>
-                                </button>
-                                <button class="fmt-btn" onclick="alignCellV('middle')" title="Align Middle">
-                                    <span class="material-icons-round">vertical_align_center</span>
-                                </button>
-                                <button class="fmt-btn" onclick="alignCellV('bottom')" title="Align Bottom">
-                                    <span class="material-icons-round">vertical_align_bottom</span>
-                                </button>
-                            </div>
-                            <button class="fmt-btn wide" onclick="mergeCells()">
-                                <span class="material-icons-round">call_merge</span> Merge
-                            </button>
-                            <button class="fmt-btn" onclick="addTableRow()" title="Add Row">
-                                <span class="material-icons-round">add</span> Row
-                            </button>
-                            <button class="fmt-btn" onclick="addTableColumn()" title="Add Column">
-                                <span class="material-icons-round">add</span> Col
-                            </button>
-                            <button class="fmt-btn danger" onclick="deleteTableRow()" title="Delete Row">
-                                <span class="material-icons-round">remove</span> Row
-                            </button>
-                            <button class="fmt-btn danger" onclick="deleteTableColumn()" title="Delete Column">
-                                <span class="material-icons-round">remove</span> Col
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Tab Content -->
-            <div class="toolbar-content" id="ai-toolbar">
-                <div class="ai-buttons">
-                    <button class="ai-pill-btn" onclick="aiRewrite()">Rewrite</button>
-                    <button class="ai-pill-btn" onclick="aiCompose()">Compose</button>
-                    <button class="ai-pill-btn" onclick="aiRefine()">Refine</button>
-                    <div class="ai-styles-dropdown">
-                        <button class="ai-pill-btn" onclick="toggleStylesDropdown()">
-                            Styles
-                            <span class="material-icons-round">expand_more</span>
-                        </button>
-                        <div class="styles-dropdown" id="styles-dropdown">
-                            <button onclick="applyStyle('fun')">😄 Fun</button>
-                            <button onclick="applyStyle('professional')">💼 Professional</button>
-                            <button onclick="applyStyle('casual')">☕ Casual</button>
-                            <div class="custom-style">
-                                <input type="text" id="custom-style" placeholder="Custom style...">
-                                <button onclick="applyCustomStyle()">
-                                    <span class="material-icons-round">send</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <h3>Secure & Private</h3>
+                <p>Your data is encrypted and protected. We prioritize your privacy above all.</p>
             </div>
         </div>
+    </section>
 
-        <!-- Editor Area -->
-        <div class="editor-container" id="editor-container">
-            <div class="editor-wrapper">
-                <div id="editor" class="editor" contenteditable="true"></div>
-            </div>
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="cta-box">
+            <h2>Ready to Write Smarter?</h2>
+            <p>Join thousands of users who are already using PARIS NoteAI to boost their productivity.</p>
+            <a href="app.html" class="btn primary">
+                <span class="material-icons-round">rocket_launch</span>
+                Get Started Free
+            </a>
         </div>
+    </section>
 
-        <!-- Hidden file input for image upload -->
-        <input type="file" id="image-upload" accept="image/*" style="display: none;"
-            onchange="handleImageUpload(event)">
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 PARIS NoteAI. All rights reserved.</p>
+    </footer>
 
-        <!-- Resize Handles Container (for selected elements) -->
-        <div id="resize-handles" class="resize-handles" style="display:none;">
-            <div class="resize-handle nw" data-dir="nw"></div>
-            <div class="resize-handle n" data-dir="n"></div>
-            <div class="resize-handle ne" data-dir="ne"></div>
-            <div class="resize-handle e" data-dir="e"></div>
-            <div class="resize-handle se" data-dir="se"></div>
-            <div class="resize-handle s" data-dir="s"></div>
-            <div class="resize-handle sw" data-dir="sw"></div>
-            <div class="resize-handle w" data-dir="w"></div>
-            <div class="rotate-handle" title="Rotate"></div>
-        </div>
+    <!-- Cursor Following Glow -->
+    <div class="cursor-glow" id="cursor-glow"></div>
 
-        <!-- Table Move/Resize Handle -->
-        <div id="table-handle" class="table-handle" style="display:none;">
-            <div class="table-move-handle" title="Move Table">
-                <span class="material-icons-round">open_with</span>
-            </div>
-        </div>
+    <script>
+        // Cursor-following glow effect
+        const cursorGlow = document.getElementById('cursor-glow');
+        let mouseX = 0, mouseY = 0;
+        let glowX = 0, glowY = 0;
 
-        <!-- AI Loading Overlay -->
-        <div id="ai-loading" class="ai-loading">
-            <div class="ai-loading-content">
-                <img src="assets/paris_ai_logo_no_bg (1) (2).png" alt="PARIS AI" class="ai-loading-logo">
-                <div class="ai-loading-text"><span style="color: #ffffff; font-weight: bold;">PARIS</span> <span
-                        style="color: #06439A; font-weight: bold;">AI</span> is thinking...</div>
-                <div class="ai-loading-spinner"></div>
-            </div>
-        </div>
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
 
-        <!-- Save Notification -->
-        <div id="save-notification" class="save-notification">
-            <span class="material-icons-round">check_circle</span>
-            <span>Note is saved</span>
-        </div>
-    </div>
+        // Smooth animation loop for floating effect
+        function animateGlow() {
+            // Smooth interpolation for floating effect
+            glowX += (mouseX - glowX) * 0.08;
+            glowY += (mouseY - glowY) * 0.08;
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast"></div>
+            cursorGlow.style.left = glowX + 'px';
+            cursorGlow.style.top = glowY + 'px';
 
-    <!-- Compose Modal -->
-    <div id="compose-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Compose with <span style="color: #ffffff;">PARIS</span> <span style="color: #06439A;">AI</span></h2>
-                <button class="modal-close" onclick="closeComposeModal()">
-                    <span class="material-icons-round">close</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <textarea id="compose-prompt" placeholder="Describe what you want to write about..."></textarea>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn secondary" onclick="closeComposeModal()">Cancel</button>
-                <button class="modal-btn primary" onclick="generateCompose()">Generate</button>
-            </div>
-        </div>
-    </div>
+            requestAnimationFrame(animateGlow);
+        }
+        animateGlow();
 
-    <!-- AI Output Modal -->
-    <div id="ai-output-modal" class="modal">
-        <div class="modal-content" style="max-width: 950px; width: 95%;">
-            <div class="modal-header">
-                <h2 id="ai-output-title"><span style="color: #ffffff;">PARIS</span> <span
-                        style="color: #06439A;">AI</span> Output</h2>
-                <button class="modal-close" onclick="closeAIOutputModal()">
-                    <span class="material-icons-round">close</span>
-                </button>
-            </div>
-            <div class="modal-body" style="padding: 0 !important;">
-                <div
-                    style="display: flex !important; flex-direction: row !important; min-height: 280px; max-height: 350px;">
-                    <!-- Left Panel - Original Text -->
-                    <div
-                        style="flex: 1; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; min-width: 0;">
-                        <div
-                            style="margin-bottom: 12px; font-weight: 600; color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
-                            Original Text</div>
-                        <div id="ai-original-text"
-                            style="flex: 1; overflow-y: auto; line-height: 1.7; color: #aaa; font-size: 14px; padding-right: 8px;">
-                        </div>
-                    </div>
-                    <!-- Right Panel - AI Generated -->
-                    <div
-                        style="flex: 1; padding: 20px; background: rgba(129, 140, 248, 0.08); display: flex; flex-direction: column; min-width: 0;">
-                        <div
-                            style="margin-bottom: 12px; font-weight: 600; color: #818cf8; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
-                            AI Generated</div>
-                        <div id="ai-generated-text"
-                            style="flex: 1; overflow-y: auto; line-height: 1.7; color: #e0e0e0; font-size: 14px; padding-right: 8px;">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn secondary" onclick="closeAIOutputModal()">Cancel</button>
-                <button class="modal-btn secondary" onclick="copyAIOutput()">
-                    <span class="material-icons-round">content_copy</span>
-                    Copy
-                </button>
-                <button class="modal-btn primary" onclick="insertAIOutput()">
-                    <span class="material-icons-round">check</span>
-                    Insert
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Table Dialog -->
-    <div id="table-modal" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2>Insert Table</h2>
-                <button class="modal-close" onclick="closeTableModal()">
-                    <span class="material-icons-round">close</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-field">
-                    <label for="table-rows">Number of Rows</label>
-                    <input type="number" id="table-rows" value="4" min="1" max="20">
-                </div>
-                <div class="form-field">
-                    <label for="table-cols">Number of Columns</label>
-                    <input type="number" id="table-cols" value="5" min="1" max="10">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn secondary" onclick="closeTableModal()">Cancel</button>
-                <button class="modal-btn primary" onclick="insertTableWithSize()">Insert</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Shapes Dialog -->
-    <div id="shapes-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Draw Shape</h2>
-                <button class="modal-close" onclick="closeShapesModal()">
-                    <span class="material-icons-round">close</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p class="shapes-instruction">Click a shape, then drag on the editor to draw it.</p>
-                <div class="shapes-section">
-                    <div class="shapes-label">Basic Shapes</div>
-                    <div class="shapes-grid">
-                        <button class="shape-btn" onclick="selectShapeToDraw('circle')" title="Circle">
-                            <svg viewBox="0 0 40 40">
-                                <circle cx="20" cy="20" r="16" fill="currentColor" />
-                            </svg>
-                        </button>
-                        <button class="shape-btn" onclick="selectShapeToDraw('rectangle')" title="Rectangle">
-                            <svg viewBox="0 0 40 40">
-                                <rect x="4" y="8" width="32" height="24" fill="currentColor" />
-                            </svg>
-                        </button>
-                        <button class="shape-btn" onclick="selectShapeToDraw('rounded-rect')" title="Rounded Rectangle">
-                            <svg viewBox="0 0 40 40">
-                                <rect x="4" y="8" width="32" height="24" rx="6" fill="currentColor" />
-                            </svg>
-                        </button>
-                        <button class="shape-btn" onclick="selectShapeToDraw('triangle')" title="Triangle">
-                            <svg viewBox="0 0 40 40">
-                                <polygon points="20,4 36,36 4,36" fill="currentColor" />
-                            </svg>
-                        </button>
-                        <button class="shape-btn" onclick="selectShapeToDraw('line')" title="Line">
-                            <svg viewBox="0 0 40 40">
-                                <line x1="4" y1="36" x2="36" y2="4" stroke="currentColor" stroke-width="3" />
-                            </svg>
-                        </button>
-                        <button class="shape-btn" onclick="selectShapeToDraw('diamond')" title="Diamond">
-                            <svg viewBox="0 0 40 40">
-                                <polygon points="20,2 38,20 20,38 2,20" fill="currentColor" />
-                            </svg>
-                        </button>
-                        <button class="shape-btn" onclick="selectShapeToDraw('star')" title="Star">
-                            <svg viewBox="0 0 40 40">
-                                <polygon points="20,2 25,15 38,15 28,24 32,38 20,30 8,38 12,24 2,15 15,15"
-                                    fill="currentColor" />
-                            </svg>
-                        </button>
-                        <button class="shape-btn" onclick="selectShapeToDraw('arrow')" title="Arrow">
-                            <svg viewBox="0 0 40 40">
-                                <polygon points="38,20 22,4 22,14 2,14 2,26 22,26 22,36" fill="currentColor" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="shapes-options">
-                    <div class="shapes-label">Shape Options</div>
-                    <div class="shape-option-row">
-                        <label>Fill Color</label>
-                        <input type="color" id="shape-fill-color" value="#4472C4">
-                    </div>
-                    <div class="shape-option-row">
-                        <label>Border Color</label>
-                        <input type="color" id="shape-border-color" value="#2F528F">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Find/Replace Modal -->
-    <div id="find-modal" class="modal">
-        <div class="modal-content modal-small">
-            <div class="modal-header">
-                <h2 id="find-modal-title">Find</h2>
-                <button class="modal-close" onclick="closeFindModal()">
-                    <span class="material-icons-round">close</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-field">
-                    <label for="find-input">Find</label>
-                    <input type="text" id="find-input">
-                </div>
-                <div id="replace-field" class="form-field" style="display: none;">
-                    <label for="replace-input">Replace with</label>
-                    <input type="text" id="replace-input">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn secondary" onclick="closeFindModal()">Close</button>
-                <button class="modal-btn primary" onclick="executeFind()">Find</button>
-                <button id="replace-btn" class="modal-btn primary" onclick="executeReplace()"
-                    style="display: none;">Replace All</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="delete-modal" class="modal">
-        <div class="modal-content modal-small delete-confirm-modal">
-            <div class="delete-icon">
-                <span class="material-icons-round">delete_forever</span>
-            </div>
-            <h2>Delete Note?</h2>
-            <p>Are you sure you want to delete this note? This action cannot be undone.</p>
-            <div class="modal-footer">
-                <button class="modal-btn secondary" onclick="closeDeleteModal()">Cancel</button>
-                <button class="modal-btn danger" id="confirm-delete-btn">Delete</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCq0mJi8waAyXtv0mN9RmBISKTY_o7bA_g",
-            authDomain: "ai-notes-8522b.firebaseapp.com",
-            projectId: "ai-notes-8522b",
-            storageBucket: "ai-notes-8522b.firebasestorage.app",
-            messagingSenderId: "163002780104",
-            appId: "1:163002780104:web:c9c1392695c54c21e8d8fd",
-            measurementId: "G-VKHHN51N7R"
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
 
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
-        window.firebaseCreateUser = createUserWithEmailAndPassword;
-        window.firebaseSignIn = signInWithEmailAndPassword;
-        window.firebaseSignOut = firebaseSignOut;
-        window.firebaseOnAuthStateChanged = onAuthStateChanged;
-        window.firebaseUpdateProfile = updateProfile;
-        window.firestoreCollection = collection;
-        window.firestoreDoc = doc;
-        window.firestoreGetDocs = getDocs;
-        window.firestoreGetDoc = getDoc;
-        window.firestoreAddDoc = addDoc;
-        window.firestoreUpdateDoc = updateDoc;
-        window.firestoreDeleteDoc = deleteDoc;
-        window.firestoreQuery = query;
-        window.firestoreWhere = where;
-        window.firestoreOrderBy = orderBy;
-        window.firestoreServerTimestamp = serverTimestamp;
-
-        window.dispatchEvent(new Event('firebase-ready'));
+        // Observe feature cards for scroll animation
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
     </script>
-
-    <script src="app.js"></script>
 </body>
 
 </html>
