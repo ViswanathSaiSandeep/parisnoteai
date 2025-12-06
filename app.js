@@ -221,12 +221,35 @@ function changeFontSizeCustom(size) {
     const editor = document.getElementById('editor');
     if (!editor) return;
 
+    // Ensure size is a valid number
+    size = parseInt(size, 10);
+    if (isNaN(size) || size < 8) size = 11;
+    if (size > 200) size = 200;
+
     const selection = window.getSelection();
-    if (!selection.rangeCount) return;
+
+    // If no selection or cursor not in editor, focus the editor
+    if (!selection.rangeCount || !editor.contains(selection.anchorNode)) {
+        editor.focus();
+    }
 
     const range = selection.getRangeAt(0);
-    if (range.collapsed) return;
 
+    // If no text is selected (collapsed range), we still want to apply the font size
+    // for the next typed text by using execCommand
+    if (range.collapsed) {
+        // Use execCommand with a temporary size, then override with CSS
+        document.execCommand('fontSize', false, '7');
+        // Find any font elements with size 7 and update them
+        const fontElements = editor.querySelectorAll('font[size="7"]');
+        fontElements.forEach(el => {
+            el.removeAttribute('size');
+            el.style.fontSize = size + 'px';
+        });
+        return;
+    }
+
+    // Text is selected - wrap it in a span with the font size
     const span = document.createElement('span');
     span.style.fontSize = size + 'px';
 
