@@ -1232,6 +1232,7 @@ body {
 
 /* Editor and Chat Wrapper */
 .editor-chat-wrapper {
+    position: relative;
     flex: 1;
     display: flex;
     overflow: hidden;
