@@ -1338,11 +1338,104 @@ async function sendChatMessage() {
 
 function addChatMessage(text, type) {
     const messages = document.getElementById('chat-messages');
+    const msgWrapper = document.createElement('div');
+    msgWrapper.className = `chat-message-wrapper ${type}`;
+
     const msg = document.createElement('div');
     msg.className = `chat-message ${type}`;
-    msg.textContent = text;
-    messages.appendChild(msg);
+
+    if (type === 'ai') {
+        // Parse markdown for AI messages
+        msg.innerHTML = parseMarkdown(text);
+        msgWrapper.appendChild(msg);
+
+        // Add action buttons for AI messages
+        const actions = document.createElement('div');
+        actions.className = 'chat-message-actions';
+        actions.innerHTML = `
+            <button class="chat-action-btn" onclick="copyChatMessage(this)" title="Copy">
+                <span class="material-icons-round">content_copy</span>
+                Copy
+            </button>
+            <button class="chat-action-btn" onclick="insertChatMessage(this)" title="Insert to Note">
+                <span class="material-icons-round">add_circle</span>
+                Insert
+            </button>
+        `;
+        msgWrapper.appendChild(actions);
+
+        // Store original text for copy/insert
+        msgWrapper.dataset.text = text;
+        msgWrapper.dataset.html = msg.innerHTML;
+    } else {
+        msg.textContent = text;
+        msgWrapper.appendChild(msg);
+    }
+
+    messages.appendChild(msgWrapper);
     messages.scrollTop = messages.scrollHeight;
+}
+
+// Parse markdown to HTML
+function parseMarkdown(text) {
+    return text
+        // Code blocks
+        .replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+        // Inline code
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        // Bold
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/__(.+?)__/g, '<strong>$1</strong>')
+        // Italic
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/_(.+?)_/g, '<em>$1</em>')
+        // Bullet lists
+        .replace(/^\* (.+)$/gm, '<li>$1</li>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        // Numbered lists
+        .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+        // Wrap consecutive lis in ul
+        .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+        // Links
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+        // Line breaks
+        .replace(/\n/g, '<br>');
+}
+
+// Copy AI message to clipboard
+function copyChatMessage(btn) {
+    const wrapper = btn.closest('.chat-message-wrapper');
+    const text = wrapper.dataset.text;
+    navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard', 'success');
+}
+
+// Insert AI message into editor
+function insertChatMessage(btn) {
+    const wrapper = btn.closest('.chat-message-wrapper');
+    const html = wrapper.dataset.html;
+    const editor = document.getElementById('editor');
+
+    // Focus editor and insert at cursor or end
+    editor.focus();
+
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+
+        const fragment = document.createRange().createContextualFragment(html);
+        range.insertNode(fragment);
+
+        // Move cursor to end of inserted content
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    } else {
+        editor.innerHTML += html;
+    }
+
+    showToast('Inserted into note', 'success');
 }
 
 function showChatLoading() {
@@ -1488,5 +1581,5 @@ Object.assign(window, {
     closeUnsavedModal, saveAndExit, discardAndExit,
     showProfileModal, closeProfileModal, updateDisplayName, animateAndCreateNote,
     changeFontSizeCustom, toggleAIChat, sendChatMessage,
-    toggleFontDropdown, selectFont
+    toggleFontDropdown, selectFont, copyChatMessage, insertChatMessage
 });
