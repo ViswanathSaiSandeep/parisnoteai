@@ -88,12 +88,12 @@
 
                 <div class="form-field">
                     <label for="login-email">Enter your Email</label>
-                    <input type="email" id="login-email" required>
+                    <input type="email" id="login-email" placeholder="Enter your Email" required>
                 </div>
 
                 <div class="form-field">
                     <label for="login-password">Enter your Password</label>
-                    <input type="password" id="login-password" required>
+                    <input type="password" id="login-password" placeholder="Enter your Password" required>
                 </div>
 
                 <button type="button" class="auth-btn" onclick="handleLogin()">Sign In</button>
@@ -109,17 +109,17 @@
 
                 <div class="form-field">
                     <label for="signup-name">Enter you Name</label>
-                    <input type="text" id="signup-name" required>
+                    <input type="text" id="signup-name" placeholder="Enter your Name" required>
                 </div>
 
                 <div class="form-field">
                     <label for="signup-email">Enter your Email</label>
-                    <input type="email" id="signup-email" required>
+                    <input type="email" id="signup-email" placeholder="Enter your Email" required>
                 </div>
 
                 <div class="form-field">
                     <label for="signup-password">Enter your Password</label>
-                    <input type="password" id="signup-password" required>
+                    <input type="password" id="signup-password" placeholder="Create your Password" required>
                 </div>
 
                 <button type="button" class="auth-btn" onclick="handleSignup()">Create Account</button>
@@ -148,11 +148,22 @@
             </div>
 
             <div class="user-menu">
-                <button class="user-btn" onclick="toggleUserMenu()">
-                    <span class="material-icons-round">person</span>
+                <button class="user-btn profile-btn" onclick="toggleUserMenu()">
+                    <span id="user-initial" class="user-initial">U</span>
                 </button>
                 <div id="user-dropdown" class="dropdown-menu">
-                    <div class="dropdown-header" id="user-email"></div>
+                    <div class="dropdown-profile">
+                        <div class="profile-avatar" id="dropdown-avatar">U</div>
+                        <div class="profile-info">
+                            <span id="user-name" class="profile-name">User</span>
+                            <span id="user-email" class="profile-email"></span>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <button onclick="showProfileModal()">
+                        <span class="material-icons-round">edit</span>
+                        Edit Profile
+                    </button>
                     <button onclick="signOut()">
                         <span class="material-icons-round">logout</span>
                         Sign Out
@@ -160,6 +171,11 @@
                 </div>
             </div>
         </header>
+
+        <!-- Welcome Message -->
+        <div class="welcome-inline" id="welcome-banner">
+            <span class="welcome-text">Welcome back, </span><span id="welcome-name" class="welcome-name">User</span>
+        </div>
 
         <main class="dashboard-content">
             <div id="notes-container" class="notes-grid"></div>
@@ -170,7 +186,7 @@
             </div>
         </main>
 
-        <button id="create-note-fab" class="fab" onclick="createNewNote()">
+        <button id="create-note-fab" class="fab-square" onclick="animateAndCreateNote()">
             <span class="material-icons-round">add</span>
         </button>
     </div>
@@ -219,22 +235,30 @@
             <div class="toolbar-content active" id="home-toolbar">
                 <div class="toolbar-section">
                     <div class="toolbar-row">
-                        <select class="font-select" id="font-family" onchange="changeFontFamily(this.value)">
-                            <option value="Product Sans">Calibri</option>
-                            <option value="Arial">Arial</option>
-                            <option value="Times New Roman">Times New Roman</option>
-                            <option value="Georgia">Georgia</option>
-                            <option value="Courier New">Courier New</option>
-                        </select>
-                        <select class="size-select" id="font-size" onchange="changeFontSize(this.value)">
-                            <option value="1">8</option>
-                            <option value="2">10</option>
-                            <option value="3" selected>11</option>
-                            <option value="4">14</option>
-                            <option value="5">18</option>
-                            <option value="6">24</option>
-                            <option value="7">36</option>
-                        </select>
+                        <!-- Custom Font Dropdown -->
+                        <div class="custom-dropdown" id="font-dropdown">
+                            <button class="dropdown-trigger" onclick="toggleFontDropdown()">
+                                <span id="font-display">Calibri</span>
+                                <span class="material-icons-round">expand_more</span>
+                            </button>
+                            <div class="dropdown-menu-custom" id="font-dropdown-menu">
+                                <button onclick="selectFont('Product Sans', 'Calibri')">Calibri</button>
+                                <button onclick="selectFont('Arial', 'Arial')">Arial</button>
+                                <button onclick="selectFont('Times New Roman', 'Times New Roman')">Times New
+                                    Roman</button>
+                                <button onclick="selectFont('Georgia', 'Georgia')">Georgia</button>
+                                <button onclick="selectFont('Verdana', 'Verdana')">Verdana</button>
+                                <button onclick="selectFont('Tahoma', 'Tahoma')">Tahoma</button>
+                                <button onclick="selectFont('Trebuchet MS', 'Trebuchet MS')">Trebuchet MS</button>
+                                <button onclick="selectFont('Courier New', 'Courier New')">Courier New</button>
+                                <button onclick="selectFont('Comic Sans MS', 'Comic Sans MS')">Comic Sans MS</button>
+                                <button onclick="selectFont('Impact', 'Impact')">Impact</button>
+                                <button onclick="selectFont('Lucida Console', 'Lucida Console')">Lucida Console</button>
+                                <button onclick="selectFont('Palatino Linotype', 'Palatino')">Palatino</button>
+                            </div>
+                        </div>
+                        <input type="number" class="size-input modern-input" id="font-size-input" value="11" min="8"
+                            max="72" onchange="changeFontSizeCustom(this.value)" title="Font Size">
                     </div>
                     <div class="toolbar-row">
                         <button class="tool-btn" onclick="formatText('bold')" title="Bold">
@@ -464,14 +488,23 @@
 
             <!-- AI Tab Content -->
             <div class="toolbar-content" id="ai-toolbar">
-                <div class="ai-buttons">
-                    <button class="ai-pill-btn" onclick="aiRewrite()">Rewrite</button>
-                    <button class="ai-pill-btn" onclick="aiCompose()">Compose</button>
-                    <button class="ai-pill-btn" onclick="aiRefine()">Refine</button>
+                <div class="insert-items">
+                    <button class="insert-btn" onclick="aiRewrite()">
+                        <span class="material-icons-round">refresh</span>
+                        <span>Rewrite</span>
+                    </button>
+                    <button class="insert-btn" onclick="aiCompose()">
+                        <span class="material-icons-round">edit_note</span>
+                        <span>Compose</span>
+                    </button>
+                    <button class="insert-btn" onclick="aiRefine()">
+                        <span class="material-icons-round">auto_fix_high</span>
+                        <span>Refine</span>
+                    </button>
                     <div class="ai-styles-dropdown">
-                        <button class="ai-pill-btn" onclick="toggleStylesDropdown()">
-                            Styles
-                            <span class="material-icons-round">expand_more</span>
+                        <button class="insert-btn" onclick="toggleStylesDropdown()">
+                            <span class="material-icons-round">style</span>
+                            <span>Styles</span>
                         </button>
                         <div class="styles-dropdown" id="styles-dropdown">
                             <button onclick="applyStyle('fun')">😄 Fun</button>
@@ -485,56 +518,94 @@
                             </div>
                         </div>
                     </div>
+                    <button class="insert-btn chat-insert-btn" onclick="toggleAIChat()">
+                        <span class="material-icons-round">chat</span>
+                        <span>Chat</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Editor Area -->
-        <div class="editor-container" id="editor-container">
-            <div class="editor-wrapper">
-                <div id="editor" class="editor" contenteditable="true"></div>
+        <!-- Editor and Chat Container -->
+        <div class="editor-chat-wrapper" id="editor-chat-wrapper">
+            <!-- Editor Area -->
+            <div class="editor-container" id="editor-container">
+                <div class="editor-wrapper">
+                    <div id="editor" class="editor" contenteditable="true"></div>
+                </div>
+            </div>
+
+            <!-- AI Chat Panel -->
+            <div class="ai-chat-panel" id="ai-chat-panel">
+                <div class="chat-header">
+                    <div class="chat-header-left">
+                        <img src="assets/parisnoteai.png" alt="PARIS NoteAI" class="chat-logo">
+                        <span class="chat-title"><span class="chat-paris">PARIS</span> <span
+                                class="chat-noteai">NoteAI</span></span>
+                    </div>
+                    <button class="chat-close-btn" onclick="toggleAIChat()">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-welcome">
+                        <img src="assets/paris_ai_logo_no_bg (1) (2).png" alt="PARIS AI" class="chat-welcome-logo">
+                        <h2 class="chat-welcome-title">Hello, <span id="chat-username" class="chat-username">User</span>
+                        </h2>
+                        <p class="chat-welcome-text">How can I help you with your notes today?</p>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Ask PARIS AI..."
+                        onkeypress="if(event.key==='Enter')sendChatMessage()">
+                    <button class="chat-send-btn" onclick="sendChatMessage()">
+                        <span class="material-icons-round">send</span>
+                    </button>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Hidden file input for image upload -->
-        <input type="file" id="image-upload" accept="image/*" style="display: none;"
-            onchange="handleImageUpload(event)">
+    <!-- Hidden file input for image upload -->
+    <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
 
-        <!-- Resize Handles Container (for selected elements) -->
-        <div id="resize-handles" class="resize-handles" style="display:none;">
-            <div class="resize-handle nw" data-dir="nw"></div>
-            <div class="resize-handle n" data-dir="n"></div>
-            <div class="resize-handle ne" data-dir="ne"></div>
-            <div class="resize-handle e" data-dir="e"></div>
-            <div class="resize-handle se" data-dir="se"></div>
-            <div class="resize-handle s" data-dir="s"></div>
-            <div class="resize-handle sw" data-dir="sw"></div>
-            <div class="resize-handle w" data-dir="w"></div>
-            <div class="rotate-handle" title="Rotate"></div>
+    <!-- Resize Handles Container (for selected elements) -->
+    <div id="resize-handles" class="resize-handles" style="display:none;">
+        <div class="resize-handle nw" data-dir="nw"></div>
+        <div class="resize-handle n" data-dir="n"></div>
+        <div class="resize-handle ne" data-dir="ne"></div>
+        <div class="resize-handle e" data-dir="e"></div>
+        <div class="resize-handle se" data-dir="se"></div>
+        <div class="resize-handle s" data-dir="s"></div>
+        <div class="resize-handle sw" data-dir="sw"></div>
+        <div class="resize-handle w" data-dir="w"></div>
+        <div class="rotate-handle" title="Rotate"></div>
+    </div>
+
+    <!-- Table Move/Resize Handle -->
+    <div id="table-handle" class="table-handle" style="display:none;">
+        <div class="table-move-handle" title="Move Table">
+            <span class="material-icons-round">open_with</span>
         </div>
+    </div>
 
-        <!-- Table Move/Resize Handle -->
-        <div id="table-handle" class="table-handle" style="display:none;">
-            <div class="table-move-handle" title="Move Table">
-                <span class="material-icons-round">open_with</span>
-            </div>
+    <!-- AI Loading Overlay -->
+    <div id="ai-loading" class="ai-loading">
+        <div class="ai-loading-content">
+            <img src="assets/paris_ai_logo_no_bg (1) (2).png" alt="PARIS AI" class="ai-loading-logo">
+            <div class="ai-loading-text"><span style="color: #ffffff; font-weight: bold;">PARIS</span> <span
+                    style="color: #06439A; font-weight: bold;">AI</span> is thinking...</div>
+            <div class="ai-loading-spinner"></div>
         </div>
+    </div>
 
-        <!-- AI Loading Overlay -->
-        <div id="ai-loading" class="ai-loading">
-            <div class="ai-loading-content">
-                <img src="assets/paris_ai_logo_no_bg (1) (2).png" alt="PARIS AI" class="ai-loading-logo">
-                <div class="ai-loading-text"><span style="color: #ffffff; font-weight: bold;">PARIS</span> <span
-                        style="color: #06439A; font-weight: bold;">AI</span> is thinking...</div>
-                <div class="ai-loading-spinner"></div>
-            </div>
-        </div>
-
-        <!-- Save Notification -->
-        <div id="save-notification" class="save-notification">
-            <span class="material-icons-round">check_circle</span>
-            <span>Note is saved</span>
-        </div>
+    <!-- Save Notification -->
+    <div id="save-notification" class="save-notification">
+        <span class="material-icons-round">check_circle</span>
+        <span>Note is saved</span>
+    </div>
     </div>
 
     <!-- Toast Notification -->
@@ -767,6 +838,43 @@
             <div class="modal-footer">
                 <button class="modal-btn secondary" onclick="closeTitleModal()">Cancel</button>
                 <button class="modal-btn primary" onclick="saveWithTitle()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsaved Changes Modal -->
+    <div id="unsaved-modal" class="modal">
+        <div class="modal-content modal-small delete-confirm-modal">
+            <div class="delete-icon" style="background: rgba(251, 191, 36, 0.15);">
+                <span class="material-icons-round" style="color: #fbbf24;">warning</span>
+            </div>
+            <h2>Unsaved Changes</h2>
+            <p>You have unsaved changes. Do you want to save before leaving?</p>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="discardAndExit()">Discard</button>
+                <button class="modal-btn primary" onclick="saveAndExit()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Edit Modal -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>Edit Profile</h2>
+                <button class="modal-close" onclick="closeProfileModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-field">
+                    <label for="profile-name">Display Name</label>
+                    <input type="text" id="profile-name" placeholder="Enter your name">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeProfileModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="updateDisplayName()">Save</button>
             </div>
         </div>
     </div>

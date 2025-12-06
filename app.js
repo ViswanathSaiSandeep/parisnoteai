@@ -31,7 +31,7 @@ function initApp() {
 
         if (user) {
             currentUser = user;
-            document.getElementById('user-email').textContent = user.email;
+            updateUserDisplay(user);
 
             // Navigate to dashboard if this is a new login (wasn't logged in before)
             if (!wasLoggedIn) {
@@ -51,6 +51,26 @@ function initApp() {
 
     setupEditorEvents();
     setupKeyboardShortcuts();
+    trackChanges();
+}
+
+function updateUserDisplay(user) {
+    const displayName = user.displayName || user.email.split('@')[0];
+    const initial = displayName.charAt(0).toUpperCase();
+
+    // Update all user display elements
+    const elements = {
+        'user-email': user.email,
+        'user-name': displayName,
+        'user-initial': initial,
+        'dropdown-avatar': initial,
+        'welcome-name': displayName
+    };
+
+    Object.entries(elements).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    });
 }
 
 function setupEditorEvents() {
@@ -177,6 +197,8 @@ function setupKeyboardShortcuts() {
                 case 'b': e.preventDefault(); formatText('bold'); break;
                 case 'i': e.preventDefault(); formatText('italic'); break;
                 case 'u': e.preventDefault(); formatText('underline'); break;
+                case 'f': e.preventDefault(); showFindReplace('find'); break;
+                case 'h': e.preventDefault(); showFindReplace('replace'); break;
             }
         }
 
@@ -189,8 +211,97 @@ function setupKeyboardShortcuts() {
             drawingShape = null;
             document.getElementById('editor-container')?.classList.remove('drawing-mode');
             deselectAll();
+            closeFindModal();
         }
     });
+}
+
+// Custom font size function for editable input
+function changeFontSizeCustom(size) {
+    const editor = document.getElementById('editor');
+    if (!editor) return;
+
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    if (range.collapsed) return;
+
+    const span = document.createElement('span');
+    span.style.fontSize = size + 'px';
+
+    try {
+        range.surroundContents(span);
+    } catch (e) {
+        // If selection spans multiple elements, use execCommand fallback
+        document.execCommand('fontSize', false, '7');
+        const fontElements = editor.querySelectorAll('font[size="7"]');
+        fontElements.forEach(el => {
+            el.removeAttribute('size');
+            el.style.fontSize = size + 'px';
+        });
+    }
+}
+
+// Custom Font Dropdown Functions
+function toggleFontDropdown() {
+    const dropdown = document.getElementById('font-dropdown');
+    dropdown?.classList.toggle('open');
+
+    // Close when clicking outside
+    if (dropdown?.classList.contains('open')) {
+        setTimeout(() => {
+            document.addEventListener('click', closeFontDropdownOnOutsideClick);
+        }, 0);
+    }
+}
+
+function closeFontDropdownOnOutsideClick(e) {
+    const dropdown = document.getElementById('font-dropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('open');
+        document.removeEventListener('click', closeFontDropdownOnOutsideClick);
+    }
+}
+
+function selectFont(fontFamily, displayName) {
+    // Update display
+    const display = document.getElementById('font-display');
+    if (display) display.textContent = displayName;
+
+    // Close dropdown
+    const dropdown = document.getElementById('font-dropdown');
+    dropdown?.classList.remove('open');
+    document.removeEventListener('click', closeFontDropdownOnOutsideClick);
+
+    // Apply font to selection
+    const editor = document.getElementById('editor');
+    if (!editor) return;
+
+    const selection = window.getSelection();
+    if (!selection.rangeCount) {
+        // No selection, apply to entire editor
+        editor.style.fontFamily = fontFamily;
+        return;
+    }
+
+    const range = selection.getRangeAt(0);
+    if (range.collapsed) {
+        // Cursor only, apply to editor
+        editor.style.fontFamily = fontFamily;
+        return;
+    }
+
+    // Apply to selected text
+    const span = document.createElement('span');
+    span.style.fontFamily = fontFamily;
+
+    try {
+        range.surroundContents(span);
+    } catch (e) {
+        // Complex selection, use execCommand fallback
+        document.execCommand('fontName', false, fontFamily);
+    }
 }
 
 // Element Selection
@@ -847,10 +958,15 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function animateAndCreateNote() {
+    createNewNote();
+}
+
 function createNewNote() {
     currentNoteId = null;
     document.getElementById('note-title').value = '';
     document.getElementById('editor').innerHTML = '';
+    markChangesSaved(); // Reset change tracking
     showScreen('editor-screen');
     setTimeout(() => document.getElementById('editor')?.focus(), 100);
 }
@@ -864,12 +980,50 @@ async function openNote(id) {
     showScreen('editor-screen');
 }
 
+// Track unsaved changes
+let hasUnsavedChanges = false;
+let originalContent = '';
+let originalTitle = '';
+
+function trackChanges() {
+    const editor = document.getElementById('editor');
+    const titleInput = document.getElementById('note-title');
+    if (editor) {
+        editor.addEventListener('input', () => { hasUnsavedChanges = true; });
+    }
+    if (titleInput) {
+        titleInput.addEventListener('input', () => { hasUnsavedChanges = true; });
+    }
+}
+
+function markChangesSaved() {
+    hasUnsavedChanges = false;
+    originalContent = document.getElementById('editor')?.innerHTML || '';
+    originalTitle = document.getElementById('note-title')?.value || '';
+}
+
+function checkForChanges() {
+    const currentContent = document.getElementById('editor')?.innerHTML || '';
+    const currentTitle = document.getElementById('note-title')?.value || '';
+    return currentContent !== originalContent || currentTitle !== originalTitle;
+}
+
 async function saveNote() {
     if (!currentUser) return showToast('Sign in to save', 'error');
     const title = document.getElementById('note-title')?.value.trim();
     const content = document.getElementById('editor')?.innerHTML;
     if (!title && !content.replace(/<[^>]*>/g, '').trim()) return showToast('Cannot save empty note', 'error');
 
+    // If no title and there's content, prompt for title
+    if (!title && content.replace(/<[^>]*>/g, '').trim()) {
+        showTitleModal();
+        return;
+    }
+
+    await performSave(title, content);
+}
+
+async function performSave(title, content) {
     try {
         const data = { title: title || 'Untitled', content, userId: currentUser.uid, updatedAt: window.firestoreServerTimestamp() };
         if (currentNoteId) {
@@ -879,12 +1033,55 @@ async function saveNote() {
             const ref = await window.firestoreAddDoc(window.firestoreCollection(window.firebaseDb, 'notes'), data);
             currentNoteId = ref.id;
         }
+        markChangesSaved();
         showSaveNotification();
         loadNotes();
     } catch (e) {
         console.error('Save error:', e);
         showToast('Error saving', 'error');
     }
+}
+
+// Title Modal
+function showTitleModal() {
+    document.getElementById('title-input').value = '';
+    document.getElementById('title-modal')?.classList.add('show');
+    setTimeout(() => document.getElementById('title-input')?.focus(), 100);
+}
+
+function closeTitleModal() {
+    document.getElementById('title-modal')?.classList.remove('show');
+}
+
+async function saveWithTitle() {
+    const title = document.getElementById('title-input')?.value.trim() || 'Untitled';
+    const content = document.getElementById('editor')?.innerHTML;
+    document.getElementById('note-title').value = title;
+    closeTitleModal();
+    await performSave(title, content);
+}
+
+// Unsaved Changes Modal
+function showUnsavedModal() {
+    document.getElementById('unsaved-modal')?.classList.add('show');
+}
+
+function closeUnsavedModal() {
+    document.getElementById('unsaved-modal')?.classList.remove('show');
+}
+
+async function saveAndExit() {
+    closeUnsavedModal();
+    await saveNote();
+    showScreen('dashboard-screen');
+    loadNotes();
+}
+
+function discardAndExit() {
+    closeUnsavedModal();
+    hasUnsavedChanges = false;
+    showScreen('dashboard-screen');
+    loadNotes();
 }
 
 function showSaveNotification() {
@@ -896,9 +1093,44 @@ function showSaveNotification() {
 async function saveAndGoBack() {
     const title = document.getElementById('note-title')?.value.trim();
     const content = document.getElementById('editor')?.innerHTML;
-    if (title || content.replace(/<[^>]*>/g, '').trim()) await saveNote();
+    const hasContent = content.replace(/<[^>]*>/g, '').trim();
+
+    // Check if there are unsaved changes
+    if (checkForChanges() && hasContent) {
+        showUnsavedModal();
+        return;
+    }
+
     showScreen('dashboard-screen');
     loadNotes();
+}
+
+// Profile Modal
+function showProfileModal() {
+    toggleUserMenu(); // Close dropdown
+    const currentName = currentUser?.displayName || currentUser?.email?.split('@')[0] || '';
+    document.getElementById('profile-name').value = currentName;
+    document.getElementById('profile-modal')?.classList.add('show');
+    setTimeout(() => document.getElementById('profile-name')?.focus(), 100);
+}
+
+function closeProfileModal() {
+    document.getElementById('profile-modal')?.classList.remove('show');
+}
+
+async function updateDisplayName() {
+    const newName = document.getElementById('profile-name')?.value.trim();
+    if (!newName) return showToast('Please enter a name', 'error');
+
+    try {
+        await window.firebaseUpdateProfile(currentUser, { displayName: newName });
+        updateUserDisplay(currentUser);
+        closeProfileModal();
+        showToast('Profile updated', 'success');
+    } catch (e) {
+        console.error('Profile update error:', e);
+        showToast('Error updating profile', 'error');
+    }
 }
 
 async function deleteNote(e, id) {
@@ -1039,6 +1271,94 @@ function getSelectedText() { return window.getSelection().toString(); }
 function showAILoading() { document.getElementById('ai-loading')?.classList.add('show'); }
 function hideAILoading() { document.getElementById('ai-loading')?.classList.remove('show'); }
 
+// AI Chat Functions
+let chatHistory = [];
+
+function toggleAIChat() {
+    const wrapper = document.getElementById('editor-chat-wrapper');
+    wrapper?.classList.toggle('chat-open');
+
+    // Focus chat input and update username when opened
+    if (wrapper?.classList.contains('chat-open')) {
+        // Update chat username
+        const userName = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'User';
+        const chatUsername = document.getElementById('chat-username');
+        if (chatUsername) chatUsername.textContent = userName;
+
+        setTimeout(() => document.getElementById('chat-input')?.focus(), 300);
+    }
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input?.value.trim();
+    if (!message) return;
+
+    // Clear input
+    input.value = '';
+
+    // Remove welcome message if present
+    const welcome = document.querySelector('.chat-welcome');
+    if (welcome) welcome.remove();
+
+    // Add user message
+    addChatMessage(message, 'user');
+
+    // Show loading
+    showChatLoading();
+
+    try {
+        // Build context from chat history
+        const contextHistory = chatHistory.slice(-6).map(m =>
+            `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`
+        ).join('\n');
+
+        const systemPrompt = `You are PARIS NoteAI, a helpful AI assistant for note-taking. Be concise, friendly, and helpful. If the user asks about notes, writing, or needs information, provide clear and useful responses.`;
+
+        const fullPrompt = contextHistory
+            ? `${systemPrompt}\n\nConversation history:\n${contextHistory}\n\nUser: ${message}\n\nAssistant:`
+            : `${systemPrompt}\n\nUser: ${message}\n\nAssistant:`;
+
+        const response = await callGeminiAPI(fullPrompt);
+
+        // Store in history
+        chatHistory.push({ role: 'user', content: message });
+        chatHistory.push({ role: 'assistant', content: response });
+
+        // Hide loading and show response
+        hideChatLoading();
+        addChatMessage(response, 'ai');
+
+    } catch (e) {
+        hideChatLoading();
+        addChatMessage('Sorry, I encountered an error. Please try again.', 'ai');
+        console.error('Chat error:', e);
+    }
+}
+
+function addChatMessage(text, type) {
+    const messages = document.getElementById('chat-messages');
+    const msg = document.createElement('div');
+    msg.className = `chat-message ${type}`;
+    msg.textContent = text;
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function showChatLoading() {
+    const messages = document.getElementById('chat-messages');
+    const loading = document.createElement('div');
+    loading.className = 'chat-loading';
+    loading.id = 'chat-loading';
+    loading.innerHTML = '<span></span><span></span><span></span>';
+    messages.appendChild(loading);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+function hideChatLoading() {
+    document.getElementById('chat-loading')?.remove();
+}
+
 async function callGeminiAPI(prompt) {
     const res = await fetch(GEMINI_FUNCTION_URL, {
         method: 'POST',
@@ -1164,5 +1484,9 @@ Object.assign(window, {
     applyPictureBorder, applyPictureOpacity, applyPictureRadius,
     applyShapeFill, applyShapeStroke, applyShapeStrokeWidth, applyShapeOpacity,
     applyCellBgColor, alignCellH, alignCellV, mergeCells, addTableRow, addTableColumn,
-    deleteTableRow, deleteTableColumn, closeDeleteModal
+    deleteTableRow, deleteTableColumn, closeDeleteModal, closeTitleModal, saveWithTitle,
+    closeUnsavedModal, saveAndExit, discardAndExit,
+    showProfileModal, closeProfileModal, updateDisplayName, animateAndCreateNote,
+    changeFontSizeCustom, toggleAIChat, sendChatMessage,
+    toggleFontDropdown, selectFont
 });
