@@ -38,7 +38,7 @@ async function callOpenRouterWithRetry(prompt, maxRetries = 3) {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                        'HTTP-Referer': 'https://paris-noteai.netlify.app',
+                        'HTTP-Referer': 'https://parisnotesai.netlify.app',
                         'X-Title': 'PARIS NoteAI'
                     },
                     body: JSON.stringify({
