@@ -8,11 +8,12 @@ const headers = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-// Hardcoded API key for testing - will move to environment variable for production
-const OPENROUTER_API_KEY = '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';
+// API key from Netlify environment variable (set in Netlify Dashboard > Site Settings > Environment Variables)
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 // Note: openai/gpt-oss-120b:free requires privacy policy configuration at https://openrouter.ai/settings/privacy
 // Using a confirmed working free model instead
 const OPENROUTER_MODEL = 'meta-llama/llama-3.2-3b-instruct:free';
+
 
 exports.handler = async (event, context) => {
     console.log('Function invoked with method:', event.httpMethod);
@@ -29,6 +30,15 @@ exports.handler = async (event, context) => {
             statusCode: 405,
             headers,
             body: JSON.stringify({ error: 'Method not allowed' })
+        };
+    }
+
+    // Check for API key
+    if (!OPENROUTER_API_KEY) {
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: 'API key not configured. Please set OPENROUTER_API_KEY in Netlify environment variables.' })
         };
     }
 
