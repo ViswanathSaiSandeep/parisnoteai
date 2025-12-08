@@ -11,12 +11,12 @@ const headers = {
 // API key from Netlify environment variable (set in Netlify Dashboard > Site Settings > Environment Variables)
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-// Free models to try (in order of preference)
+// Free models to try (in order of preference) - Updated Dec 2024
 const FREE_MODELS = [
+    'meta-llama/llama-3.3-70b-instruct:free',
+    'deepseek/deepseek-r1:free',
     'meta-llama/llama-3.2-3b-instruct:free',
-    'google/gemma-2-9b-it:free',
-    'mistralai/mistral-7b-instruct:free',
-    'qwen/qwen-2-7b-instruct:free'
+    'mistralai/mistral-small-3.1-24b-instruct:free'
 ];
 
 // Helper function to delay
