@@ -1,6 +1,8 @@
 // Netlify Serverless Function to proxy OpenRouter API calls
 // This keeps your API key secure on the server side
 
+const fetch = require('node-fetch');
+
 const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',

@@ -1,0 +1,9 @@
+{
+    "name": "paris-noteai",
+    "version": "1.0.0",
+    "description": "AI-powered note taking application",
+    "private": true,
+    "dependencies": {
+        "node-fetch": "^2.7.0"
+    }
+}
