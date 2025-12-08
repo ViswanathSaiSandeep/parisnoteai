@@ -1,4 +1,4 @@
-// Netlify Serverless Function to proxy Gemini API calls
+// Netlify Serverless Function to proxy OpenRouter API calls
 // This keeps your API key secure on the server side
 
 const headers = {
@@ -7,6 +7,12 @@ const headers = {
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
+
+// Hardcoded API key for testing - will move to environment variable for production
+const OPENROUTER_API_KEY = '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';
+// Note: openai/gpt-oss-120b:free requires privacy policy configuration at https://openrouter.ai/settings/privacy
+// Using a confirmed working free model instead
+const OPENROUTER_MODEL = 'meta-llama/llama-3.2-3b-instruct:free';
 
 exports.handler = async (event, context) => {
     console.log('Function invoked with method:', event.httpMethod);
@@ -23,21 +29,6 @@ exports.handler = async (event, context) => {
             statusCode: 405,
             headers,
             body: JSON.stringify({ error: 'Method not allowed' })
-        };
-    }
-
-    // Get API key from environment variable (set in Netlify dashboard)
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-    console.log('API Key exists:', !!GEMINI_API_KEY);
-    console.log('API Key length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
-
-    if (!GEMINI_API_KEY) {
-        console.error('GEMINI_API_KEY not found in environment variables');
-        return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({ error: 'API key not configured. Please set GEMINI_API_KEY in Netlify environment variables.' })
         };
     }
 
@@ -66,34 +57,43 @@ exports.handler = async (event, context) => {
             };
         }
 
-        console.log('Calling Gemini API...');
+        console.log('Calling OpenRouter API with model:', OPENROUTER_MODEL);
 
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
-                })
-            }
-        );
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                'HTTP-Referer': 'https://paris-noteai.netlify.app',
+                'X-Title': 'PARIS NoteAI'
+            },
+            body: JSON.stringify({
+                model: OPENROUTER_MODEL,
+                messages: [
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 2048
+            })
+        });
 
-        console.log('Gemini API response status:', response.status);
+        console.log('OpenRouter API response status:', response.status);
 
         if (!response.ok) {
             const errorData = await response.text();
-            console.error('Gemini API error:', errorData);
+            console.error('OpenRouter API error:', errorData);
             return {
                 statusCode: response.status,
                 headers,
-                body: JSON.stringify({ error: 'Gemini API request failed', details: errorData })
+                body: JSON.stringify({ error: 'OpenRouter API request failed', details: errorData })
             };
         }
 
         const data = await response.json();
-        const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const generatedText = data.choices?.[0]?.message?.content || '';
 
         console.log('Generated text length:', generatedText.length);
 
