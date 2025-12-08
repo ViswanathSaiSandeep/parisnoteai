@@ -1519,7 +1519,7 @@ async function aiRewrite() {
     if (!text.trim()) return showToast('Select text to rewrite', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`You are a text editor. Rewrite the following text to make it clearer and more engaging. Use **bold** for important terms. IMPORTANT: Return ONLY the rewritten text. Do not include any introduction, explanation, or phrases like "Here is" or "Sure!". Just output the improved text directly.\n\nText to rewrite:\n"${text}"`);
+        const result = await callGeminiAPI(`You are a skilled human writer. Rewrite the following text to make it clearer and more engaging. Write naturally like a real person would - avoid robotic, repetitive, or overly formal AI-sounding language. Vary sentence structure and use conversational flow. Use **bold** for important terms. IMPORTANT: Return ONLY the rewritten text. No introductions or explanations.\n\nText to rewrite:\n"${text}"`);
         hideAILoading();
         showAIOutputModal(text, result, 'Rewrite Result');
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1538,7 +1538,7 @@ async function generateCompose() {
     closeComposeModal();
     showAILoading();
     try {
-        const result = await callGeminiAPI(`You are a content writer. Write high-quality content about the following topic. Use **bold** for key terms and important concepts. Structure the content with clear paragraphs. IMPORTANT: Return ONLY the content. Do not include any introduction like "Here is" or "Sure, here's". Just output the content directly.\n\nTopic: "${prompt}"`);
+        const result = await callGeminiAPI(`You are a skilled human writer. Write natural, engaging content about the following topic. Write like a real person - vary your sentence lengths, use conversational language, and avoid repetitive patterns or robotic phrasing that sounds AI-generated. Use **bold** for key terms. Structure with clear paragraphs. IMPORTANT: Return ONLY the content. No introductions.\n\nTopic: "${prompt}"`);
         hideAILoading();
         showAIOutputModal(prompt, result, 'Compose Result');
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1549,7 +1549,7 @@ async function aiRefine() {
     if (!text.trim()) return showToast('Select text to refine', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`You are a professional editor. Refine the following text by improving grammar, clarity, flow, and readability. Fix any errors and enhance the writing quality while preserving the original meaning. IMPORTANT: Return ONLY the refined text. Do not include any introduction, explanation, or commentary. Just output the improved text directly.\n\nText to refine:\n"${text}"`);
+        const result = await callGeminiAPI(`You are a skilled human editor. Refine the following text by improving grammar, clarity, flow, and readability while keeping it natural-sounding. Make it read like it was written by a thoughtful human - avoid overly polished, robotic, or AI-like phrasing. Preserve the original voice and meaning. IMPORTANT: Return ONLY the refined text. No commentary.\n\nText to refine:\n"${text}"`);
         hideAILoading();
         showAIOutputModal(text, result, 'Refine Result');
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1561,7 +1561,7 @@ async function applyStyle(style) {
     if (!text.trim()) return showToast('Select text first', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`You are a writing style expert. Transform the following text into a ${style} style. Maintain the core meaning but completely change the tone, vocabulary, and structure to match the ${style} style. IMPORTANT: Return ONLY the styled text. Do not include any introduction, explanation, or phrases like "Here is". Just output the transformed text directly.\n\nText to transform:\n"${text}"`);
+        const result = await callGeminiAPI(`You are a skilled human writer. Transform the following text into a ${style} style while keeping it natural and human-sounding. Avoid robotic patterns, repetitive phrasing, or AI-like language. Make it sound like a real person wrote it in that style. IMPORTANT: Return ONLY the styled text. No introductions.\n\nText to transform:\n"${text}"`);
         hideAILoading();
         showAIOutputModal(text, result, `${style} Style`);
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1575,7 +1575,7 @@ async function applyCustomStyle() {
     if (!text.trim()) return showToast('Select text first', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`You are a writing style expert. Transform the following text using the style: "${style}". Adjust the tone, vocabulary, and structure accordingly. IMPORTANT: Return ONLY the styled text. Do not include any introduction, explanation, or meta-commentary. Just output the transformed text directly.\n\nText to transform:\n"${text}"`);
+        const result = await callGeminiAPI(`You are a skilled human writer. Transform the following text using the style: "${style}". Keep the writing natural and human-sounding - avoid robotic, repetitive, or AI-like language. Write like a real person would in that style. IMPORTANT: Return ONLY the styled text. No introductions.\n\nText to transform:\n"${text}"`);
         document.getElementById('custom-style').value = '';
         hideAILoading();
         showAIOutputModal(text, result, 'Custom Style');
