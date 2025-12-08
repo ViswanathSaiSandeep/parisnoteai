@@ -1519,7 +1519,7 @@ async function aiRewrite() {
     if (!text.trim()) return showToast('Select text to rewrite', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`Rewrite this text to be clearer and engaging. CRITICAL RULES: Write exactly like a human blogger would - use contractions (don't, isn't, we're), start some sentences with "And" or "But", include occasional filler words like "actually", "basically", "honestly". Mix very short sentences with longer ones. Use casual punctuation like dashes - like this. Avoid perfect grammar sometimes. Never use phrases like "it's important to note", "in conclusion", "furthermore", "additionally", "moreover". Use **bold** sparingly. Output ONLY the rewritten text, nothing else.\n\n"${text}"`);
+        const result = await callGeminiAPI(`You are a skilled human writer. Rewrite the following text to make it clearer and more engaging. Write naturally like a real person would - avoid robotic, repetitive, or overly formal AI-sounding language. Vary sentence structure and use conversational flow. Use **bold** for important terms. IMPORTANT: Return ONLY the rewritten text. No introductions or explanations.\n\nText to rewrite:\n"${text}"`);
         hideAILoading();
         showAIOutputModal(text, result, 'Rewrite Result');
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1538,7 +1538,7 @@ async function generateCompose() {
     closeComposeModal();
     showAILoading();
     try {
-        const result = await callGeminiAPI(`Write content about: "${prompt}". CRITICAL RULES: Write exactly like a human blogger - use contractions everywhere (it's, don't, can't, we'll), start sentences with "So", "And", "But" sometimes. Include casual phrases like "honestly", "look", "here's the thing". Mix short punchy sentences with longer rambling ones. Use dashes - for emphasis. Avoid AI phrases like "it is worth noting", "in today's world", "it's important to", "furthermore", "in conclusion". Use **bold** sparingly. Be slightly imperfect. Output ONLY the content, nothing else.`);
+        const result = await callGeminiAPI(`You are a skilled human writer. Write natural, engaging content about the following topic. Write like a real person - vary your sentence lengths, use conversational language, and avoid repetitive patterns or robotic phrasing that sounds AI-generated. Use **bold** for key terms. Structure with clear paragraphs. IMPORTANT: Return ONLY the content. No introductions.\n\nTopic: "${prompt}"`);
         hideAILoading();
         showAIOutputModal(prompt, result, 'Compose Result');
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1549,7 +1549,7 @@ async function aiRefine() {
     if (!text.trim()) return showToast('Select text to refine', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`Fix grammar and improve this text while keeping it casual. CRITICAL RULES: Keep contractions (don't change "don't" to "do not"). Keep the original voice and style. Add slight imperfections - humans aren't perfect writers. Vary sentence lengths randomly. Never add formal transitions like "however", "therefore", "thus", "moreover". Output ONLY the refined text, nothing else.\n\n"${text}"`);
+        const result = await callGeminiAPI(`You are a skilled human editor. Refine the following text by improving grammar, clarity, flow, and readability while keeping it natural-sounding. Make it read like it was written by a thoughtful human - avoid overly polished, robotic, or AI-like phrasing. Preserve the original voice and meaning. IMPORTANT: Return ONLY the refined text. No commentary.\n\nText to refine:\n"${text}"`);
         hideAILoading();
         showAIOutputModal(text, result, 'Refine Result');
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1561,7 +1561,7 @@ async function applyStyle(style) {
     if (!text.trim()) return showToast('Select text first', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`Rewrite this in ${style} style. CRITICAL RULES: Write like an actual human would in ${style} style - use contractions, casual language, varied sentence lengths. Start some sentences with "And", "But", "So". Include small imperfections. Never use "furthermore", "moreover", "it's worth noting", "in conclusion". Keep it natural and slightly messy like real human writing. Output ONLY the styled text, nothing else.\n\n"${text}"`);
+        const result = await callGeminiAPI(`You are a skilled human writer. Transform the following text into a ${style} style while keeping it natural and human-sounding. Avoid robotic patterns, repetitive phrasing, or AI-like language. Make it sound like a real person wrote it in that style. IMPORTANT: Return ONLY the styled text. No introductions.\n\nText to transform:\n"${text}"`);
         hideAILoading();
         showAIOutputModal(text, result, `${style} Style`);
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1575,7 +1575,7 @@ async function applyCustomStyle() {
     if (!text.trim()) return showToast('Select text first', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`Rewrite this using style: "${style}". CRITICAL RULES: Write like a real person - contractions everywhere, casual tone, varied sentence lengths. Some sentences very short. Others longer and rambling a bit. Start some with "And" or "But". Include words like "actually", "basically", "honestly" sometimes. Never use "furthermore", "moreover", "in conclusion", "it's important to note". Be slightly imperfect. Output ONLY the styled text, nothing else.\n\n"${text}"`);
+        const result = await callGeminiAPI(`You are a skilled human writer. Transform the following text using the style: "${style}". Keep the writing natural and human-sounding - avoid robotic, repetitive, or AI-like language. Write like a real person would in that style. IMPORTANT: Return ONLY the styled text. No introductions.\n\nText to transform:\n"${text}"`);
         document.getElementById('custom-style').value = '';
         hideAILoading();
         showAIOutputModal(text, result, 'Custom Style');

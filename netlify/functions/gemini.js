@@ -1,8 +1,6 @@
 // Netlify Serverless Function to proxy OpenRouter API calls
 // This keeps your API key secure on the server side
 
-const fetch = require('node-fetch');
-
 const headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -40,7 +38,7 @@ async function callOpenRouterWithRetry(prompt, maxRetries = 3) {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                        'HTTP-Referer': 'https://parisnotesai.netlify.app',
+                        'HTTP-Referer': 'https://paris-noteai.netlify.app',
                         'X-Title': 'PARIS NoteAI'
                     },
                     body: JSON.stringify({
