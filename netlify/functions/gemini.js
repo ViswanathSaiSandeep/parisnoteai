@@ -72,7 +72,15 @@ async function callOpenRouterWithRetry(prompt, maxRetries = 3) {
                 const data = await response.json();
                 const generatedText = data.choices?.[0]?.message?.content || '';
                 console.log(`Success with model ${model}. Generated text length:`, generatedText.length);
+
+                // If the model returned an empty response, try the next model
+                if (!generatedText.trim()) {
+                    console.log(`Model ${model} returned empty response, trying next model...`);
+                    break; // Break retry loop, try next model
+                }
+
                 return { success: true, text: generatedText };
+
 
             } catch (error) {
                 console.error(`Attempt ${attempt + 1} failed:`, error.message);
