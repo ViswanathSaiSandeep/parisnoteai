@@ -1511,12 +1511,15 @@ function insertAIOutput() {
     showToast('Inserted!', 'success');
 }
 
+// AI Functions
+function toggleStylesDropdown() { document.getElementById('styles-dropdown')?.classList.toggle('show'); }
+
 async function aiRewrite() {
     const text = getSelectedText();
     if (!text.trim()) return showToast('Select text to rewrite', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`Rewrite this text clearly. Use **bold** for key terms:\n\n"${text}"`);
+        const result = await callGeminiAPI(`You are a text editor. Rewrite the following text to make it clearer and more engaging. Use **bold** for important terms. IMPORTANT: Return ONLY the rewritten text. Do not include any introduction, explanation, or phrases like "Here is" or "Sure!". Just output the improved text directly.\n\nText to rewrite:\n"${text}"`);
         hideAILoading();
         showAIOutputModal(text, result, 'Rewrite Result');
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1535,7 +1538,7 @@ async function generateCompose() {
     closeComposeModal();
     showAILoading();
     try {
-        const result = await callGeminiAPI(`Write content about: "${prompt}". Use **bold** for key terms.`);
+        const result = await callGeminiAPI(`You are a content writer. Write high-quality content about the following topic. Use **bold** for key terms and important concepts. Structure the content with clear paragraphs. IMPORTANT: Return ONLY the content. Do not include any introduction like "Here is" or "Sure, here's". Just output the content directly.\n\nTopic: "${prompt}"`);
         hideAILoading();
         showAIOutputModal(prompt, result, 'Compose Result');
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1546,7 +1549,7 @@ async function aiRefine() {
     if (!text.trim()) return showToast('Select text to refine', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`Refine this text for clarity and grammar:\n\n"${text}"`);
+        const result = await callGeminiAPI(`You are a professional editor. Refine the following text by improving grammar, clarity, flow, and readability. Fix any errors and enhance the writing quality while preserving the original meaning. IMPORTANT: Return ONLY the refined text. Do not include any introduction, explanation, or commentary. Just output the improved text directly.\n\nText to refine:\n"${text}"`);
         hideAILoading();
         showAIOutputModal(text, result, 'Refine Result');
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1558,7 +1561,7 @@ async function applyStyle(style) {
     if (!text.trim()) return showToast('Select text first', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`Rewrite in ${style} style:\n\n"${text}"`);
+        const result = await callGeminiAPI(`You are a writing style expert. Transform the following text into a ${style} style. Maintain the core meaning but completely change the tone, vocabulary, and structure to match the ${style} style. IMPORTANT: Return ONLY the styled text. Do not include any introduction, explanation, or phrases like "Here is". Just output the transformed text directly.\n\nText to transform:\n"${text}"`);
         hideAILoading();
         showAIOutputModal(text, result, `${style} Style`);
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
@@ -1572,12 +1575,13 @@ async function applyCustomStyle() {
     if (!text.trim()) return showToast('Select text first', 'error');
     showAILoading();
     try {
-        const result = await callGeminiAPI(`Rewrite with style "${style}":\n\n"${text}"`);
+        const result = await callGeminiAPI(`You are a writing style expert. Transform the following text using the style: "${style}". Adjust the tone, vocabulary, and structure accordingly. IMPORTANT: Return ONLY the styled text. Do not include any introduction, explanation, or meta-commentary. Just output the transformed text directly.\n\nText to transform:\n"${text}"`);
         document.getElementById('custom-style').value = '';
         hideAILoading();
         showAIOutputModal(text, result, 'Custom Style');
     } catch (e) { hideAILoading(); showToast('Error', 'error'); }
 }
+
 
 function showToast(msg, type = '') {
     const toast = document.getElementById('toast');
