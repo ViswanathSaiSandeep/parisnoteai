@@ -901,19 +901,32 @@ function toggleUserMenu() {
     document.getElementById('user-dropdown')?.classList.toggle('show');
 }
 
-// Notes
+// Notes - Real-time listener for immediate updates
+let notesUnsubscribe = null;
+
 async function loadNotes() {
     if (!currentUser) return;
+
+    // Unsubscribe from previous listener if exists
+    if (notesUnsubscribe) {
+        notesUnsubscribe();
+    }
+
     try {
         const q = window.firestoreQuery(
             window.firestoreCollection(window.firebaseDb, 'notes'),
             window.firestoreWhere('userId', '==', currentUser.uid)
         );
-        const snap = await window.firestoreGetDocs(q);
-        notes = [];
-        snap.forEach(doc => notes.push({ id: doc.id, ...doc.data() }));
-        notes.sort((a, b) => (b.updatedAt?.toDate?.() || 0) - (a.updatedAt?.toDate?.() || 0));
-        renderNotes();
+
+        // Use onSnapshot for real-time updates
+        notesUnsubscribe = window.firestoreOnSnapshot(q, (snap) => {
+            notes = [];
+            snap.forEach(doc => notes.push({ id: doc.id, ...doc.data() }));
+            notes.sort((a, b) => (b.updatedAt?.toDate?.() || 0) - (a.updatedAt?.toDate?.() || 0));
+            renderNotes();
+        }, (error) => {
+            console.error('Error in notes listener:', error);
+        });
     } catch (e) {
         console.error('Error loading notes:', e);
         renderNotes();
@@ -1000,6 +1013,7 @@ async function openNote(id) {
     currentNoteId = id;
     document.getElementById('note-title').value = note.title || '';
     document.getElementById('editor').innerHTML = note.content || '';
+    markChangesSaved(); // Reset change tracking after loading
     showScreen('editor-screen');
 }
 

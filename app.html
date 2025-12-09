@@ -883,7 +883,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCq0mJi8waAyXtv0mN9RmBISKTY_o7bA_g",
@@ -917,6 +917,7 @@
         window.firestoreWhere = where;
         window.firestoreOrderBy = orderBy;
         window.firestoreServerTimestamp = serverTimestamp;
+        window.firestoreOnSnapshot = onSnapshot;
 
         window.dispatchEvent(new Event('firebase-ready'));
     </script>
